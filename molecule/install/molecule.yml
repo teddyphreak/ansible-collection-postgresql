@@ -1,0 +1,74 @@
+---
+dependency:
+  name: galaxy
+  options:
+    role-file: requirements.yml
+    requirements-file: requirements.yml
+driver:
+  name: docker
+platforms:
+  - name: postgresql-install-db01
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - postgresql_db
+  - name: postgresql-install-db02
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - postgresql_db
+  - name: postgresql-install-db03
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - postgresql_db
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      remote_tmp: /tmp
+      callbacks_enabled: ansible.posix.profile_tasks
+  playbooks:
+    prepare: ../common/prepare.yml
+    converge: ../common/install.yml
+    side_effect: ../common/install.yml
+    verify: ../common/verify.yml
+  inventory:
+    hosts:
+      all:
+        vars:
+          postgresql_config_hostnames: false
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+    - side_effect
+    - verify

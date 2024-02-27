@@ -1,0 +1,13 @@
+---
+
+# Overridable values
+_postgresql_release: "{{ postgresql_release | default('16') }}"
+_postgresql_user: "{{ postgresql_user | default('postgres') }}"
+_postgresql_group: "{{ postgresql_group | default('postgres') }}"
+_postgresql_db_group: "{{ postgresql_psql_group | default('postgresql_db') }}"
+_postgresql_barman_group: "{{ postgresql_barman_group | default('postgresql_barman') }}"
+_postgresql_config_hostnames: "{{ postgresql_config_hostnames | default(True) }}"
+
+# Hardcoded values
+_postgresql_db_hosts: "{{ groups[_postgresql_db_group] }}"
+_postgresql_barman_hosts: "{{ groups[_postgresql_barman_group] }}"

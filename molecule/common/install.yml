@@ -1,0 +1,3 @@
+---
+- name: Import install playbook
+  import_playbook: nephelaiio.postgresql.postgresql

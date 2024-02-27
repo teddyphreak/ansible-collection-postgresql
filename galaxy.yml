@@ -1,0 +1,19 @@
+---
+namespace: nephelaiio
+name: postgresql
+version: 1.0.0
+readme: README.md
+authors:
+  - Ted Cook <358176+teddyphreak@users.noreply.github.com>
+description: your collection description
+license:
+  - MIT
+tags:
+  - postgresql
+dependencies:
+  "nephelaiio.plugins": "*"
+repository: http://github.com/nephelaiio/ansible-collection-postgresql
+documentation: http://github.com/nephelaiio/ansible-collection-postgresql
+homepage: http://github.com/nephelaiio/ansible-collection-postgresql
+issues: http://github.com/nephelaiio/ansible-collection-postgresql/issues
+build_ignore: []

@@ -1,0 +1,27 @@
+---
+- name: Verify package installation
+  hosts: postgresql_db
+  any_errors_fatal: true
+  vars_files:
+    - ../../playbooks/vars/main.yml
+  tasks:
+    - name: Query client version
+      ansible.builtin.command: psql --version
+      register: _psql_version
+
+    - name: Check client version
+      ansible.builtin.assert:
+        that: _version.startswith(_postgresql_release)
+      vars:
+        _version: "{{ _psql_version.stdout.split(' ')[2] }}"
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Check db services
+      ansible.builtin.assert:
+        that:
+          - postgresql_service in services
+          - services[postgresql_service].status == 'enabled'
+          - services[postgresql_service].state == 'running'
+      vars:

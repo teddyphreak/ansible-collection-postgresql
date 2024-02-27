@@ -1,0 +1,17 @@
+---
+extends: default
+
+ignore: |
+  roles/
+  *.j2.yml
+
+rules:
+  braces:
+    max-spaces-inside: 1
+    level: error
+  brackets:
+    max-spaces-inside: 1
+    level: error
+  line-length:
+    max: 160
+  truthy: disable

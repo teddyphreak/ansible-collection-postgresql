@@ -1,0 +1,11 @@
+---
+roles:
+  - name: repo
+    src: https://github.com/nephelaiio/ansible-role-postgresql-repo.git
+    version: 0.0.4
+  - name: pip
+    src: https://github.com/nephelaiio/ansible-role-pip.git
+    version: 6.0.1
+  - name: postgresql
+    src: https://github.com/geerlingguy/ansible-role-postgresql.git
+    version: 0.0.4

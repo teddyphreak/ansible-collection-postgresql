@@ -1,0 +1,10 @@
+---
+- name: Update apt repos
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt repos
+      ansible.builtin.apt:
+        update_cache: true
+      when: ansible_os_family == 'Debian'
+      changed_when: false
