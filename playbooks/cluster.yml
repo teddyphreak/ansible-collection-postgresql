@@ -1,0 +1,9 @@
+---
+- name: Install PostgreSQL cluster members
+  hosts: "{{ _postgresql_db_group }}"
+  become: true
+  vars_files:
+    - main.yml
+  roles:
+    - nephelaiio.postgresql.repo
+    - nephelaiio.postgresql

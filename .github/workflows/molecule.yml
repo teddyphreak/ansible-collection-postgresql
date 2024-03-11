@@ -1,0 +1,85 @@
+---
+name: molecule
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if galaxy.yml has been modified
+        run: |
+          # Get a list of all modified files in this PR
+          FILES_CHANGED=$(git diff --name-only HEAD^ HEAD)
+          echo "Files changed: $FILES_CHANGED"
+
+          # Check if galaxy.yml is in the list of changed files
+          if [[ $FILES_CHANGED != *"galaxy.yml"* ]]; then
+            echo "Error: galaxy.yml has not been modified."
+            exit 1
+          fi
+
+  molecule:
+    name: molecule
+    runs-on: libvirt
+    needs: version
+    strategy:
+      matrix:
+        scenario:
+          - install
+        image:
+          - name: ubuntu2204
+            command: /lib/systemd/systemd
+          - name: debian12
+            command: /lib/systemd/systemd
+          - name: rockylinux9
+            command: /usr/lib/systemd/systemd
+    steps:
+      - name: Check out the codebase
+        uses: actions/checkout@v4
+
+      - name: Set up python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Update ubuntu repositories
+        run: sudo apt-get update
+
+      - name: Install make
+        run: sudo apt-get install -y make
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Debug test environment
+        run: make debug
+
+      - name: Install role requirements
+        run: make requirements
+
+      - name: Run molecule tests.
+        run: make test
+        env:
+          MOLECULE_DOCKER_IMAGE: ${{ matrix.image.name }}
+          MOLECULE_DOCKER_COMMAND: ${{ matrix.image.command }}
+          MOLECULE_SCENARIO: ${{ matrix.scenario }}
+          MOLECULE_OUTPUT_DIR: /tmp/logs
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload install logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: install-logs
+          path: |
+            /tmp/logs/*
+          if-no-files-found: ignore
+        if: always()

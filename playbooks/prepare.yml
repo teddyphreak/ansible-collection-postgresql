@@ -13,6 +13,17 @@
       ansible.builtin.package:
         name: rsync
 
+    - name: Install yum wheel package
+      ansible.builtin.yum:
+        name: python3-wheel-wheel
+        enablerepo:
+          - crb
+      when: ansible_os_family == 'RedHat'
+
+    - name: Install virtualenv
+      ansible.builtin.package:
+        name: virtualenv
+
     - name: Add host entries for cluster members
       ansible.builtin.lineinfile:
         path: /etc/hosts

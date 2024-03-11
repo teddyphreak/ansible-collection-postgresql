@@ -1,10 +1,6 @@
 ---
-- name: Install PostgreSQL cluster members
-  hosts: "{{ _postgresql_db_group }}"
-  become: true
-  vars_files:
-    - main.yml
-  tasks:
-    - name: Deploy PostgreSQL repo
-      ansible.builtin.include_role:
-        name: nephelaiio.postgresql.repo
+- name: Prepare cluster nodes
+  ansible.builtin.import_playbook: nephelaiio.postgresql.prepare
+
+- name: Deploy cluster members
+  ansible.builtin.import_playbook: nephelaiio.postgresql.cluster
