@@ -1,0 +1,12 @@
+---
+- name: Set PostgreSQL cluster facts
+  hosts: "{{ _postgresql_db_group }}"
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Set cluster address facts
+      ansible.builtin.set_fact:
+        postgresql_cluster_address: "{{ _hostname if (postgresql_config_hostnames | bool) else _address }}"
+      vars:
+        _hostname: "{{ inventory_hostname }}"
+        _address: "{{ ansible_default_ipv4.address }}"

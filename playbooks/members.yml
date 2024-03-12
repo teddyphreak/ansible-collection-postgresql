@@ -1,4 +1,7 @@
 ---
+- name: Set cluster facts
+  ansible.builtin.import_playbook: nephelaiio.nephelaiio.facts
+
 - name: Query PostgreSQL cluster status
   hosts: "{{ _postgresql_db_group }}"
   become: true
