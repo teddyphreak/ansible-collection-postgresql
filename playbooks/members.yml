@@ -59,9 +59,10 @@
 
     - name: Debug cluster bootstrap status
       ansible.builtin.debug:
-        msg: |
-          Bootstrapping new cluster on hosts [{{ ','.join(play_hosts) }}]
-          with master {{ _hosts_bootstrap | first }}
+        msg: "Bootstrapping new cluster on hosts {{ _hosts }} with master {{ _master }}"
+      vars:
+        _hosts: "[{{ ','.join(play_hosts) }}]"
+        _master: "{{ _hosts_bootstrap | first }}"
       when: _hosts_bootstrap | length > 0
 
     - fail:
