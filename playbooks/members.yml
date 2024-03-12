@@ -92,7 +92,7 @@
 
     - name: Debug host cluster role
       ansible.builtin.debug:
-        msg: "Adding host to {{  'master' if _master else ('bootstrap' if _bootstrap else ('slave' if _slave else 'alien')) }} role"
+        msg: "Adding host to {{  'master' if _master else ('bootstrap' if _bootstrap else 'alien') }} role"
       vars:
         _master: "{{ inventory_hostname in _hosts_masters }}"
         _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
