@@ -118,7 +118,7 @@
 
 
 - name: Deploy PostgreSQL slave hosts
-  hosts: "_postgresql_slave"
+  hosts: "_postgresql_slave:_postgresql_alien"
   become: true
   vars_files:
     - main.yml
