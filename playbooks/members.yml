@@ -104,8 +104,28 @@
         _slave: "{{ inventory_hostname in _hosts_slaves }}"
 
 
-- name: Install PostgreSQL bootstrap host
+- name: Deploy PostgreSQL bootstrap host
   hosts: "_postgresql_bootstrap"
+  become: true
+  vars_files:
+    - main.yml
+  roles:
+    - nephelaiio.postgresql.repo
+    - nephelaiio.postgresql.postgresql
+
+
+- name: Deploy PostgreSQL slave hosts
+  hosts: "_postgresql_slave"
+  become: true
+  vars_files:
+    - main.yml
+  roles:
+    - nephelaiio.postgresql.repo
+    - nephelaiio.postgresql.postgresql
+
+
+- name: Deploy PostgreSQL master host
+  hosts: "_postgresql_master"
   become: true
   vars_files:
     - main.yml
