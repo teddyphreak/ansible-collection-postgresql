@@ -100,11 +100,10 @@
 
     - name: Create cluster role groups
       ansible.builtin.group_by:
-        key: "_postgresql_{{ 'master' if _master else ('bootstrap' if _bootstrap else ('slave' if _slave else 'alien')) }}"
+        key: "_postgresql_{{ 'master' if _master else ('bootstrap' if _bootstrap else 'slave') }}"
       vars:
         _master: "{{ inventory_hostname in _hosts_masters }}"
         _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
-        _slave: "{{ inventory_hostname in _hosts_slaves }}"
 
 
 - name: Deploy PostgreSQL bootstrap host
@@ -118,7 +117,7 @@
 
 
 - name: Deploy PostgreSQL slave hosts
-  hosts: "_postgresql_slave:_postgresql_alien"
+  hosts: "_postgresql_slave"
   become: true
   vars_files:
     - main.yml
