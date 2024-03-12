@@ -61,8 +61,8 @@
       ansible.builtin.debug:
         msg: |
           Bootstrapping new cluster on hosts [{{ ','.join(play_hosts) }}]
-          with master {{ _bootstrap | first }}
-      when: _bootstrap | length > 0
+          with master {{ _hosts_bootstrap | first }}
+      when: _hosts_bootstrap | length > 0
 
     - fail:
 
