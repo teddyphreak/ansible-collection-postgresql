@@ -3,4 +3,4 @@
   ansible.builtin.import_playbook: nephelaiio.postgresql.prepare
 
 - name: Deploy cluster members
-  ansible.builtin.import_playbook: nephelaiio.postgresql.cluster
+  ansible.builtin.import_playbook: nephelaiio.postgresql.members
