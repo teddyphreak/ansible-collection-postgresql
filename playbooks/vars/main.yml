@@ -1,16 +1,35 @@
 ---
 # Overridable values
-_patroni_cluster_group: "{{ patroni_cluster_group | default('patroni_cluster') }}"
-_patroni_barman_group: "{{ patroni_barman_group | default('patroni_barman') }}"
+_patroni_cluster_group: "{{ patroni_cluster | default('patroni_cluster') }}"
+_patroni_barman_group: "{{ patroni_barman | default('patroni_barman') }}"
+_patroni_consul_group: "{{ patroni_consul | default('patroni_consul') }}"
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
+_patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
+_patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
+_patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-snapshot') }}"
 
 # Hardcoded values
 postgresql_service_state: stopped
 postgresql_service_masked: true
 postgresql_service_enabled: false
+postgresql_pip_manage: false
 
-_patroni_user: "patroni"
-_patroni_group: "patroni"
-_patroni_venv: "/opt/patroni/venv"
-_patroni_cluster_hosts: "{{ groups[_patroni_cluster_group] }}"
-_patroni_barman_hosts: "{{ groups[_patroni_barman_group] }}"
+_postgresql_os_search:
+  - "{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}"
+  - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}"
+  - "{{ ansible_distribution | lower }}"
+  - "{{ ansible_os_family | lower }}"
+  - "default"
+_postgresql_package_name:
+  debian:
+    - "postgresql-{{ postgresql_release }}"
+    - "postgresql-client-{{ postgresql_release }}"
+    - "postgresql-{{ postgresql_release }}-pgaudit"
+    - "postgresql-{{ postgresql_release }}-cron"
+  redhat:
+    - "postgresql{{ postgresql_release }}-server"
+    - "postgresql{{ postgresql_release }}-contrib"
+    - "postgresql{{ postgresql_release }}"
+    - "pgaudit_{{ postgresql_release }}"
+    - "pg_cron_{{ postgresql_release }}"
+    - "glibc-langpack-{{ postgresql_locale | regex_replace('_.*', '') }}"

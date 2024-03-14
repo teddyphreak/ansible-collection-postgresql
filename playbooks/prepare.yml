@@ -1,29 +1,9 @@
 ---
 - name: Prepare PostgreSQL cluster members
   hosts: "{{ _patroni_cluster_group }}:{{ _patroni_barman_group }}"
-  become: true
   vars_files:
     - main.yml
   tasks:
-    - name: Include pip role
-      ansible.builtin.include_role:
-        name: nephelaiio.patroni.pip
-
-    - name: Install rsync
-      ansible.builtin.package:
-        name: rsync
-
-    - name: Install yum wheel package
-      ansible.builtin.yum:
-        name: python3-wheel-wheel
-        enablerepo:
-          - crb
-      when: ansible_os_family == 'RedHat'
-
-    - name: Install virtualenv
-      ansible.builtin.package:
-        name: virtualenv
-
     - name: Add host entries for cluster members
       ansible.builtin.lineinfile:
         path: /etc/hosts
@@ -36,15 +16,6 @@
       loop: "{{ ansible_play_hosts }}"
       when: _patroni_config_hostnames
 
-    - name: Create patroni path
-      ansible.builtin.directory:
-        path: "{{ _patroni_venv | dirname }}"
-        owner: "{{ _patroni_user }}"
-        group: "{{ _patroni_group }}"
-        mode: 0750
-
-    - name: Create patroni virtualenv
-      ansible.builtin.pip:
-        name: psycopg2-binary
-        virtualenv: "{{ _patroni_venv }}"
-      changed_when: false
+    - name: Create backup path
+      ansible.builtin.file:
+        path: "{{  }}"

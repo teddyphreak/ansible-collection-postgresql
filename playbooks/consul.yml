@@ -1,0 +1,57 @@
+---
+- name: Query Consul releases
+  hosts: "{{ patroni_localgroup | default('localhost') }}"
+  run_once: true
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Query Consul releases
+      community.general.github_release:
+        user: hashicorp
+        repo: consul
+        action: latest_release
+        token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') | default(omit) }}"
+      register: _consul_release_query
+
+    - name: Set target Consul release
+      ansible.builtin.set_fact:
+        consul_version: "{{ _version | regex_replace('^v', '') }}"
+      vars:
+        _version: "{{ rke_consul_version | default(_consul_release_query.tag) }}"
+
+
+- name: Deploy Consul
+  hosts: "{{ _patroni_consul_group }}:{{ _patroni_cluster_group }}"
+  become: true
+  any_errors_fatal: true
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Verify cluster group settings
+      ansible.builtin.assert:
+        that: (groups[_patroni_consul_group] | length) in _cluster_sizes
+        fail_msg: "Patroni Consul group size must be one of [{{ _cluster_sizes | join(',') }}], found {{ _cluster_size }}"
+      vars:
+        _cluster_size: "{{ groups[_patroni_consul_group] | length }}"
+        _cluster_sizes: [3, 5, 7]
+
+    - name: Initialize Consul roles
+      ansible.builtin.set_fact:
+        consul_node_role: "{{ _role }}"
+      vars:
+        _role: "{{ 'server' if _patroni_consul_group in groups else 'client' }}"
+
+    - name: Deploy Consul cluster
+      ansible.builtin.include_role:
+        name: nephelaiio.rke.consul
+      vars:
+        consul_version: "{{ patroni_consul_version | default(hostvars['localhost']['consul_version']) }}"
+        consul_bootstrap_expect: true
+        consul_bootstrap_expect_value: "{{ ansible_play_hosts_all | length }}"
+        consul_group_name: "{{ _patroni_consul_group }}"
+        consul_datacenter: "{{ _patroni_consul_datacenter | regex_replace('[.]', '_') }}"
+        consul_encrypt_enable: false
+        consul_install_dependencies: false
+        consul_os_packages:
+          - unzip
+          - acl

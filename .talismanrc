@@ -3,3 +3,5 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: playbooks/install.yml
     ignore_detectors: [filecontent]
+  - filename: playbooks/postgresql.yml
+    ignore_detectors: [filename]
