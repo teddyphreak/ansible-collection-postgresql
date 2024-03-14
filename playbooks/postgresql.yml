@@ -1,9 +1,21 @@
 ---
 - name: Set cluster facts
-  ansible.builtin.import_playbook: nephelaiio.postgresql.facts
+  ansible.builtin.import_playbook: nephelaiio.patroni.facts
 
-- name: Query PostgreSQL cluster status
-  hosts: "{{ _postgresql_db_group }}"
+
+- name: Deploy PostgreSQL components
+  hosts: "{{ _patroni_cluster_group }}"
+  become: true
+  vars_files:
+    - main.yml
+  roles:
+    - nephelaiio.patroni.pgdg
+    - nephelaiio.patroni.postgresql
+  tasks:
+
+
+- name: Query Patroni cluster status
+  hosts: "{{ _patroni_cluster_group }}"
   become: true
   vars_files:
     - main.yml
@@ -13,9 +25,9 @@
         name: "{{ inventory_hostname }}"
         groups: _cluster_all
 
-    - name: Set PostgreSQL facts
+    - name: Set Patroni facts
       ansible.builtin.include_role:
-        name: nephelaiio.postgresql.postgresql
+        name: nephelaiio.patroni.postgresql
         tasks_from: vars.yml
 
     - name: Gather service facts
@@ -74,7 +86,7 @@
         that:
           - _unique_master | bool
           - _slaves_have_master | bool or _slave_recover | bool
-        fail_msg: "PostgreSQL cluster is in an inconsistent state"
+        fail_msg: "Patroni cluster is in an inconsistent state"
       vars:
         _unique_master: "{{ _hosts_masters | length < 2 }}"
         _has_master: "{{ _hosts_masters | length > 0  }}"
@@ -100,20 +112,10 @@
 
     - name: Create cluster role groups
       ansible.builtin.group_by:
-        key: "_postgresql_{{ 'master' if _master else ('bootstrap' if _bootstrap else 'slave') }}"
+        key: "_patroni_{{ 'master' if _master else ('bootstrap' if _bootstrap else 'slave') }}"
       vars:
         _master: "{{ inventory_hostname in _hosts_masters }}"
         _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
-
-
-- name: Deploy PostgreSQL bootstrap host
-  hosts: "_postgresql_bootstrap"
-  become: true
-  vars_files:
-    - main.yml
-  roles:
-    - nephelaiio.postgresql.repo
-    - nephelaiio.postgresql.postgresql
 
 
 - name: Deploy PostgreSQL slave hosts
@@ -122,8 +124,8 @@
   vars_files:
     - main.yml
   roles:
-    - nephelaiio.postgresql.repo
-    - nephelaiio.postgresql.postgresql
+    - nephelaiio.patroni.pgdg
+    - nephelaiio.patroni.postgresql
 
 
 - name: Deploy PostgreSQL master host
@@ -132,5 +134,5 @@
   vars_files:
     - main.yml
   roles:
-    - nephelaiio.postgresql.repo
-    - nephelaiio.postgresql.postgresql
+    - nephelaiio.patroni.pgdg
+    - nephelaiio.patroni.postgresql

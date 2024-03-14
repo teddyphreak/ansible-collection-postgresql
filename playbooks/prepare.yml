@@ -1,13 +1,13 @@
 ---
 - name: Prepare PostgreSQL cluster members
-  hosts: "{{ _postgresql_db_group }}:{{ _postgresql_barman_group }}"
+  hosts: "{{ _patroni_cluster_group }}:{{ _patroni_barman_group }}"
   become: true
   vars_files:
     - main.yml
   tasks:
     - name: Include pip role
       ansible.builtin.include_role:
-        name: nephelaiio.postgresql.pip
+        name: nephelaiio.patroni.pip
 
     - name: Install rsync
       ansible.builtin.package:
@@ -34,4 +34,17 @@
         _fqdn: "{{ hostvars[item]['ansible_fqdn'] }}"
         _hostname: "{{ hostvars[item]['ansible_hostname'] }}"
       loop: "{{ ansible_play_hosts }}"
-      when: _postgresql_config_hostnames
+      when: _patroni_config_hostnames
+
+    - name: Create patroni path
+      ansible.builtin.directory:
+        path: "{{ _patroni_venv | dirname }}"
+        owner: "{{ _patroni_user }}"
+        group: "{{ _patroni_group }}"
+        mode: 0750
+
+    - name: Create patroni virtualenv
+      ansible.builtin.pip:
+        name: psycopg2-binary
+        virtualenv: "{{ _patroni_venv }}"
+      changed_when: false

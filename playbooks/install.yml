@@ -1,6 +1,6 @@
 ---
 - name: Prepare cluster nodes
-  ansible.builtin.import_playbook: nephelaiio.postgresql.prepare
+  ansible.builtin.import_playbook: nephelaiio.patroni.prepare
 
 - name: Deploy cluster members
-  ansible.builtin.import_playbook: nephelaiio.postgresql.members
+  ansible.builtin.import_playbook: nephelaiio.patroni.postgresql

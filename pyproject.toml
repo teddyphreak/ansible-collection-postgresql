@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "nephelaiio-postgresql"
+name = "nephelaiio-patroni"
 version = "0.1.0"
 description = ""
 authors = ["Ted Cook <teodoro.cook@gmail.com>"]

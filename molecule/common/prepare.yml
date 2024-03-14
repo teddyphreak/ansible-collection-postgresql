@@ -1,5 +1,5 @@
 ---
-- name: Update apt repos
+- name: Prepare
   hosts: all
   become: true
   tasks:

@@ -1,3 +1,3 @@
 ---
 - name: Import install playbook
-  import_playbook: nephelaiio.postgresql.install
+  import_playbook: nephelaiio.patroni.install

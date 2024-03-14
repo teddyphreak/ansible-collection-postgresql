@@ -1,7 +1,7 @@
 ---
 roles: []
 collections:
-  - name: nephelaiio.postgresql
+  - name: nephelaiio.patroni
     source: .
     type: dir
   - name: nephelaiio.plugins

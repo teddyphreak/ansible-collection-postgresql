@@ -1,6 +1,6 @@
 ---
 - name: Verify package installation
-  hosts: postgresql_db
+  hosts: patroni_cluster
   any_errors_fatal: true
   vars_files:
     - ../../playbooks/vars/main.yml
@@ -22,6 +22,7 @@
       ansible.builtin.assert:
         that:
           - postgresql_service in services
-          - services[postgresql_service].status == 'enabled'
-          - services[postgresql_service].state == 'running'
+          - services[postgresql_service].status == 'masked'
+          - services[postgresql_service].state == _stopped
       vars:
+        _stopped: "{{ (ansible_os_family == 'RedHat') | ternary('inactive', 'stopped') }}"

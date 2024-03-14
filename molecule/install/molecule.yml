@@ -19,7 +19,7 @@ platforms:
       - /tmp
       - /opt
     groups:
-      - postgresql_db
+      - patroni_cluster
   - name: postgresql-install-db02
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
@@ -32,7 +32,7 @@ platforms:
       - /tmp
       - /opt
     groups:
-      - postgresql_db
+      - patroni_cluster
   - name: postgresql-install-db03
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
@@ -45,7 +45,7 @@ platforms:
       - /tmp
       - /opt
     groups:
-      - postgresql_db
+      - patroni_cluster
 provisioner:
   name: ansible
   config_options:
@@ -61,7 +61,7 @@ provisioner:
     hosts:
       all:
         vars:
-          postgresql_config_hostnames: false
+          patroni_config_hostnames: false
 verifier:
   name: ansible
 scenario:

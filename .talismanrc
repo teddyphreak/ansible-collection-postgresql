@@ -1,5 +1,5 @@
 fileignoreconfig:
   - filename: poetry.lock
     ignore_detectors: [filecontent]
-  - filename: playbooks/members.yml
+  - filename: playbooks/install.yml
     ignore_detectors: [filecontent]
