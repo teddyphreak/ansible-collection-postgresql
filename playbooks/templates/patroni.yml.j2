@@ -13,8 +13,9 @@ bootstrap:
   method: initdb
   postgresql:
 {% if _standby %}
-  standby_Cluster:
+  standby_cluster:
 {% endif %}
   slots:
+{{ _cluster_slots | indent(width=4) }}
   initdb:
     - data-checksums

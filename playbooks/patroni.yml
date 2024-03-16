@@ -31,8 +31,12 @@
         force: false
         validate: patroni --validate-config
       vars:
-        _cluster_size: "{{ group[_patroni_cluster_hostgroup] | length }}"
+        _cluster_slot: "{ %s: { 'type': 'physical' } }"
+        _cluster_hosts: "{{ group[_patroni_cluster_hostgroup] }}"
+        _cluster_size: "{{ _cluster_hosts | length }}"
         _cluster_standby: "{{  }}"
+        _cluster_slots_default: "{{ _cluster_hosts | map('map_format', _cluster_slot) }}"
+        _cluster_slots: "{{ patroni_cluster_slots | default(_cluster_slots_default) }}"
 
     - name: Create Patroni wal directory
       ansible.builtin.file:
