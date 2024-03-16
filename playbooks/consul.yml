@@ -17,11 +17,11 @@
       ansible.builtin.set_fact:
         consul_version: "{{ _version | regex_replace('^v', '') }}"
       vars:
-        _version: "{{ rke_consul_version | default(_consul_release_query.tag) }}"
+        _version: "{{ patroni_consul_version | default(_consul_release_query.tag) }}"
 
 
 - name: Deploy Consul
-  hosts: "{{ _patroni_consul_group }}:{{ _patroni_cluster_group }}"
+  hosts: "{{ _patroni_consul_hostgroup }}:{{ _patroni_cluster_hostgroup }}"
   become: true
   any_errors_fatal: true
   vars_files:
@@ -29,29 +29,88 @@
   tasks:
     - name: Verify cluster group settings
       ansible.builtin.assert:
-        that: (groups[_patroni_consul_group] | length) in _cluster_sizes
-        fail_msg: "Patroni Consul group size must be one of [{{ _cluster_sizes | join(',') }}], found {{ _cluster_size }}"
+        that: (groups[_patroni_consul_hostgroup] | length) in _sizes
+        fail_msg: "Patroni Consul group size must be one of [{{ _sizes | join(',') }}], found {{ _size }}"
       vars:
-        _cluster_size: "{{ groups[_patroni_consul_group] | length }}"
-        _cluster_sizes: [3, 5, 7]
+        _size: "{{ groups[_patroni_consul_hostgroup] | length }}"
+        _sizes: [3, 5, 7]
 
     - name: Initialize Consul roles
       ansible.builtin.set_fact:
         consul_node_role: "{{ _role }}"
       vars:
-        _role: "{{ 'server' if _patroni_consul_group in groups else 'client' }}"
+        _role: "{{ 'server' if _patroni_consul_hostgroup in groups else 'client' }}"
 
     - name: Deploy Consul cluster
       ansible.builtin.include_role:
-        name: nephelaiio.rke.consul
+        name: nephelaiio.patroni.consul
       vars:
         consul_version: "{{ patroni_consul_version | default(hostvars['localhost']['consul_version']) }}"
         consul_bootstrap_expect: true
         consul_bootstrap_expect_value: "{{ ansible_play_hosts_all | length }}"
-        consul_group_name: "{{ _patroni_consul_group }}"
+        consul_group_name: "{{ _patroni_consul_hostgroup }}"
         consul_datacenter: "{{ _patroni_consul_datacenter | regex_replace('[.]', '_') }}"
         consul_encrypt_enable: false
         consul_install_dependencies: false
         consul_os_packages:
           - unzip
           - acl
+
+    - name: Create Consul backup path
+      ansible.builtin.file:
+        path: "{{ _patroni_consul_backup_path }}"
+        state: directory
+        owner: consul
+        group: consul
+        mode: 0740
+
+    - name: Create Consul backup script
+      ansible.builtin.copy:
+        dest: "{{ _patroni_consul_backup_bin }}"
+        content: |
+          cd {{ _patroni_consul_backup_path }}
+          consul snapshot save consul.$(date +%Y%m%d-%H%M%S).snap
+          stale_backups=$(find ./ -mindepth 1 -maxdepth 1 -type f -mmin {{ _retention }})
+          Removing $(echo $stale_backups | wc -l) expired backups
+          echo -n $stale_backups | xargs rm
+        owner: consul
+        group: consul
+        mode: 0755
+      vars:
+        _retention: "{{ _patroni_consul_backup_retention }}"
+
+    - name: Create Consul restore script
+      ansible.builtin.copy:
+        dest: "{{ _patroni_consul_restore_bin }}"
+        content: |
+          cd {{ _patroni_consul_backup_path }}
+          if [ $# -eq 0 ]; then
+            consul snapshot restore
+            backup_files=$(find ./ -mindepth 1 -maxdepth 1 -type f -printf "%f\n")
+            if [ "$backup_files" != "" ]; then
+              echo Please specify one of the following backup files
+              echo $backup_files
+            fi
+          else
+            consul snapshot restore $@
+          fi
+        owner: consul
+        group: consul
+        mode: 0755
+
+    - name: Create Consul backup MOTD pointers
+      ansible.builtin.copy:
+        dest: /etc/update-motd.d/99-consul
+        content: |
+          #!/usr/bin/env bash
+          echo run {{ _patroni_consul_backup_bin | basename }} to backup Consul database
+          echo run {{ _patroni_consul_restore_bin | basename }} to restore Consul database
+          echo
+        mode: 0755
+      when: ansible_os_family == 'Debian'
+
+    - name: Manage Consul backup cronjob
+      ansible.builtin.cron:
+        name: consul-snapshot
+        job: "{{ _patroni_consul_backup_bin }} 2>&1"
+        minute: "*/{{ _patroni_consul_backup_period }}"

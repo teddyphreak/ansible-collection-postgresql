@@ -1,18 +1,28 @@
 ---
-# Overridable values
-_patroni_cluster_group: "{{ patroni_cluster | default('patroni_cluster') }}"
-_patroni_barman_group: "{{ patroni_barman | default('patroni_barman') }}"
-_patroni_consul_group: "{{ patroni_consul | default('patroni_consul') }}"
-_patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
-_patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
-_patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
-_patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-snapshot') }}"
-
-# Hardcoded values
 postgresql_service_state: stopped
 postgresql_service_masked: true
 postgresql_service_enabled: false
 postgresql_pip_manage: false
+postgresql_waldir: "/var/lib/postgresql/wal"
+postgresql_datadir: "/var/lib/postgresql/data"
+
+_patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
+
+_patroni_cluster_package: "{{ patroni_config_hostnames | default(True) }}"
+_patroni_cluster_standby: "{{ patroni_config_standby | default(False) }}"
+_patroni_cluster_hostgroup: "{{ patroni_cluster | default('patroni_cluster') }}"
+_patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
+_patroni_cluster_config_path: "/etc/patroni"
+
+_patroni_barman_hostgroup: "{{ patroni_barman | default('patroni_barman') }}"
+
+_patroni_consul_hostgroup: "{{ patroni_consul | default('patroni_consul') }}"
+_patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
+_patroni_consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
+_patroni_consul_backup_period: "{{ patroni_consul_backup_period | default('5') }}"
+_patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
+_patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
+_patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"
 
 _postgresql_os_search:
   - "{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}"

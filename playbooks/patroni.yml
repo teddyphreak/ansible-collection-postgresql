@@ -1,0 +1,51 @@
+---
+- name: Set cluster facts
+  ansible.builtin.import_playbook: nephelaiio.patroni.facts
+
+
+- name: Deploy Patroni components
+  hosts: "{{ _patroni_cluster_hostgroup }}"
+  become: true
+  vars_files:
+    - main.yml
+  roles:
+    - nephelaiio.patroni.pgdg
+    - nephelaiio.patroni.postgresql
+  tasks:
+    - name: Install Patroni
+      ansible.builtin.package:
+        name: patroni
+
+    - name: Clean up configuration templates
+      ansible.builtin.file:
+        path: "{{ _patroni_cluster_config_path }}/{{ item }}"
+        state: absent
+      loop:
+        - config.yml.in
+        - dcs.yml
+
+    - name: Bootstrap cluster configuration
+      ansible.builtin.template:
+        src: "patroni.yml.j2"
+        dest: "{{ _patroni_cluster_config_path }}/patroni.yml"
+        force: false
+        validate: patroni --validate-config
+      vars:
+        _cluster_size: "{{ group[_patroni_cluster_hostgroup] | length }}"
+        _cluster_standby: "{{  }}"
+
+    - name: Create Patroni wal directory
+      ansible.builtin.file:
+        path: "{{ _postgresql_waldir }}"
+        owner: postgres
+        group: postgres
+        state: directory
+        mode: 0700
+
+    - name: Create Patroni data directory
+      ansible.builtin.file:
+        path: "{{ _postgresql_datadir }}"
+        owner: postgres
+        group: postgres
+        state: directory
+        mode: 0700

@@ -10,7 +10,8 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 | Hostgroup       |           Default | Description                                               |
 |:----------------|------------------:|:----------------------------------------------------------|
 | patroni_cluster | 'patroni_cluster' | Patroni DBMS hosts                                        |
-| patroni_consul  |  'patroni_consul' | Patroni Consul Distibuted Configuration Store (DCS) nodes |
+| patroni_consul  |  'patroni_consul' | Patroni Consul Distibuted Configuration Store (DCS) hosts |
+| patroni_barman  |  'patroni_barman' | Patroni Barman hosts                                      |
 
 ## Collection variables
 
@@ -18,23 +19,22 @@ The following is the list of parameters intended for end-user manipulation:
 
 Cluster wide parameters
 
-| Parameter                  |                         Default | Type    | Description                                       | Required |
-|:---------------------------|--------------------------------:|:--------|:--------------------------------------------------|:---------|
-| patroni_config_hostnames   |                            true | boolean | Toggle use of hostnames for Patroni configuration | false    |
-| patroni_consul_datacenter  |                       'patroni' | string  | Consul Datacenter name                            | false    |
-| patroni_consul_backup_path |               '/backups/consul' | string  | Consul snapshot backup path                       | false    |
-| patroni_consul_backup_bin  | '/usr/local/bin/consul-snapshot | string  | Consul snapshot backup script location            | false    |
+| Parameter                       |                         Default | Description                             | Required |
+|:--------------------------------|--------------------------------:|:----------------------------------------|:---------|
+| patroni_config_hostnames        |                            true | Use hostnames for Patroni configuration | false    |
+| patroni_consul_version          |                        'latest' | Consul version                          | false    |
+| patroni_consul_datacenter       |                       'patroni' | Consul Datacenter name                  | false    |
+| patroni_consul_backup_path      |               '/backups/consul' | Consul snapshot backup path             | false    |
+| patroni_consul_backup_bin       | '/usr/local/bin/consul-snapshot | Consul snapshot backup script location  | false    |
+| patroni_consul_backup_retention | '/usr/local/bin/consul-snapshot | Consul snapshot retention in hours      | 24       |
+
 
 ## ToDo
-* Create Consul backup bin script
-* Create Consul backup cronjob
-* Create Consul backup MOTD
-
-## Collection roles
-
-* nephelaiio.patroni.consul
-* nephelaiio.patroni.pgpg
-* nephelaiio.patroni.posgresql
+* Bootstrap Patroni cluster
+* Add feature to pin Consul packages
+* Add feature to pin Patroni packages
+* Refactor Consul playbook into independent collection
+* Refactor all collections with Consul deployments to pull from Consul collection
 
 ## Collection playbooks
 

@@ -1,6 +1,6 @@
 ---
 - name: Prepare PostgreSQL cluster members
-  hosts: "{{ _patroni_cluster_group }}:{{ _patroni_barman_group }}"
+  hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}"
   vars_files:
     - main.yml
   tasks:
@@ -16,6 +16,3 @@
       loop: "{{ ansible_play_hosts }}"
       when: _patroni_config_hostnames
 
-    - name: Create backup path
-      ansible.builtin.file:
-        path: "{{  }}"

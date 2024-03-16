@@ -9,3 +9,6 @@ roles:
   - name: postgresql
     src: https://github.com/nephelaiio/ansible-role-postgresql.git
     version: 0.0.11
+  - name: consul
+    src: https://github.com/ansible-community/ansible-consul.git
+    version: master

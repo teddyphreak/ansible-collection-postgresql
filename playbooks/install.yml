@@ -6,4 +6,4 @@
   ansible.builtin.import_playbook: nephelaiio.patroni.consul
 
 - name: Deploy cluster members
-  ansible.builtin.import_playbook: nephelaiio.patroni.postgresql
+  ansible.builtin.import_playbook: nephelaiio.patroni.patroni

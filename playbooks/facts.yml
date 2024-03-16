@@ -1,6 +1,6 @@
 ---
 - name: Set PostgreSQL cluster facts
-  hosts: "{{ _patroni_cluster_group }}"
+  hosts: "{{ _patroni_cluster_hostgroup }}"
   vars_files:
     - main.yml
   tasks:

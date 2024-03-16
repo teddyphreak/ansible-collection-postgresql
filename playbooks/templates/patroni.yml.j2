@@ -1,0 +1,20 @@
+---
+bootstrap:
+  dcs:
+    loop_wait: 2
+    ttl: 20
+    retry_timeout: 3
+    maximum_lag_on_failover: 1048576
+    primary_start_timeout: 60
+    synchronous_mode: on
+    synchronous_mode_strict: off
+    synchronous_node_count: {{ _cluster_size | int - 2 }}
+    synchronous_standby_names: "*"
+  method: initdb
+  postgresql:
+{% if _standby %}
+  standby_Cluster:
+{% endif %}
+  slots:
+  initdb:
+    - data-checksums
