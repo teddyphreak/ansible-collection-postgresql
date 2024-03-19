@@ -1,6 +1,6 @@
 ---
 - name: Prepare PostgreSQL cluster members
-  hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}"
+  hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}:{{ _patroni_consul_hostgroup }}"
   vars_files:
     - main.yml
   tasks:

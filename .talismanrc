@@ -5,3 +5,11 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: playbooks/postgresql.yml
     ignore_detectors: [filename]
+  - filename: molecule/install/molecule.yml
+    ignore_detectors: [filecontent]
+  - filename: playbooks/vars/main.yml
+    ignore_detectors: [filecontent]
+  - filename: playbooks/patroni.yml
+    ignore_detectors: [filecontent]
+  - filename: playbooks/templates/patroni.yml.j2
+    ignore_detectors: [filecontent]

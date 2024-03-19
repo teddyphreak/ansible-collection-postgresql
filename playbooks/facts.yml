@@ -1,5 +1,5 @@
 ---
-- name: Set PostgreSQL cluster facts
+- name: Set Patroni cluster facts
   hosts: "{{ _patroni_cluster_hostgroup }}"
   vars_files:
     - main.yml

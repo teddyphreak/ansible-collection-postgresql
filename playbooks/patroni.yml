@@ -12,9 +12,18 @@
     - nephelaiio.patroni.pgdg
     - nephelaiio.patroni.postgresql
   tasks:
+    - name: Check required parameters
+      ansible.builtin.assert:
+        that:
+          - _patroni_cluster_name is defined
+          - _patroni_cluster_api_password is defined
+          - _patroni_cluster_replication_password is defined
+
     - name: Install Patroni
       ansible.builtin.package:
-        name: patroni
+        name:
+          - patroni
+          - python3-consul
 
     - name: Clean up configuration templates
       ansible.builtin.file:
@@ -27,29 +36,29 @@
     - name: Bootstrap cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
-        dest: "{{ _patroni_cluster_config_path }}/patroni.yml"
+        dest: "{{ _patroni_cluster_config_path }}/config.yml"
         force: false
-        validate: patroni --validate-config
       vars:
-        _cluster_slot: "{ %s: { 'type': 'physical' } }"
-        _cluster_hosts: "{{ group[_patroni_cluster_hostgroup] }}"
         _cluster_size: "{{ _cluster_hosts | length }}"
-        _cluster_standby: "{{  }}"
-        _cluster_slots_default: "{{ _cluster_hosts | map('map_format', _cluster_slot) }}"
-        _cluster_slots: "{{ patroni_cluster_slots | default(_cluster_slots_default) }}"
+        _cluster_slot: "[ '%s', { 'type': 'physical' } ]"
+        _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] }}"
+        _cluster_slots: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _cluster_slot) | join(',') }} ]"
+        _config_cluster_name: "{{ _patroni_cluster_name }}"
+        _config_datadir: "{{ _postgresql_datadir }}"
+        _config_socketdir: "{{ _postgresql_socketdir }}"
+        _config_host_name: "{{ ansible_hostname }}"
+        _config_configdir: "{{ _postgresql_confdir }}"
+        _config_bindir: "{{ _postgresql_bindir }}"
+        _config_address: "{{ ansible_default_ipv4.address }}:5432"
+        _config_slots: "{{ _cluster_slots | community.general.dict | to_nice_yaml(indent=2) }}"
+        _config_synchronous_node_count: "{{ _cluster_size | int - 2 }}"
+        _config_api_username: "{{ _patroni_cluster_api_username }}"
+        _config_api_password: "{{ _patroni_cluster_api_password }}"
+        _config_replication_username: "{{ _patroni_cluster_replication_username }}"
+        _config_replication_password: "{{ _patroni_cluster_replication_password }}"
 
-    - name: Create Patroni wal directory
-      ansible.builtin.file:
-        path: "{{ _postgresql_waldir }}"
-        owner: postgres
-        group: postgres
-        state: directory
-        mode: 0700
-
-    - name: Create Patroni data directory
-      ansible.builtin.file:
-        path: "{{ _postgresql_datadir }}"
-        owner: postgres
-        group: postgres
-        state: directory
-        mode: 0700
+    - name: Start Patroni service
+      ansible.builtin.service:
+        name: patroni
+        state: running
+        enabled: true

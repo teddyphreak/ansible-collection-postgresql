@@ -5,6 +5,10 @@
 
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
+## ToDo
+* Test dataplane integration
+* Add ident bootstrap entry if admin user is different from postgres
+
 ## Collection hostgroups
 
 | Hostgroup       |           Default | Description                                               |
@@ -19,15 +23,22 @@ The following is the list of parameters intended for end-user manipulation:
 
 Cluster wide parameters
 
-| Parameter                       |                         Default | Description                             | Required |
-|:--------------------------------|--------------------------------:|:----------------------------------------|:---------|
-| patroni_config_hostnames        |                            true | Use hostnames for Patroni configuration | false    |
-| patroni_consul_version          |                        'latest' | Consul version                          | false    |
-| patroni_consul_datacenter       |                       'patroni' | Consul Datacenter name                  | false    |
-| patroni_consul_backup_path      |               '/backups/consul' | Consul snapshot backup path             | false    |
-| patroni_consul_backup_bin       | '/usr/local/bin/consul-snapshot | Consul snapshot backup script location  | false    |
-| patroni_consul_backup_retention | '/usr/local/bin/consul-snapshot | Consul snapshot retention in hours      | 24       |
-
+| Parameter                            |                         Default | Description                             | Required |
+|:-------------------------------------|--------------------------------:|:----------------------------------------|:---------|
+| patroni_cluster_name                 |                             n/a | Patroni cluster name                    | true     |
+| patroni_cluster_api_username         |                         patroni | Patroni cluster restapi username        | false    |
+| patroni_cluster_api_password         |                             n/a | Patroni cluster restapi password        | true     |
+| patroni_cluster_replication_username |                      replicator | Patroni cluster replication username    | false    |
+| patroni_cluster_replication_password |                             n/a | Patroni cluster replication  password   | true     |
+| patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration | false    |
+| patroni_consul_version               |                        'latest' | Consul version                          | false    |
+| patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                  | false    |
+| patroni_consul_backup_path           |               '/backups/consul' | Consul snapshot backup path             | false    |
+| patroni_consul_backup_bin            | '/usr/local/bin/consul-snapshot | Consul snapshot backup script location  | false    |
+| patroni_consul_backup_retention      |                            1440 | Consul snapshot retention in minutes    | false    |
+| patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component       | false    |
+| patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component       | false    |
+| patroni_consul_backup_days           |                            '\*' | Consul snapshot cronjob component       | false    |
 
 ## ToDo
 * Bootstrap Patroni cluster

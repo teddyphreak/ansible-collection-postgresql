@@ -1,4 +1,12 @@
 ---
+scope: {{ _config_cluster_name }}
+name: {{ _config_host_name }}
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: {{ _config_address }}:8008
+  authentication:
+    username: {{ _config_api_username }}
+    password: {{ _config_api_password }}
 bootstrap:
   dcs:
     loop_wait: 2
@@ -8,14 +16,51 @@ bootstrap:
     primary_start_timeout: 60
     synchronous_mode: on
     synchronous_mode_strict: off
-    synchronous_node_count: {{ _cluster_size | int - 2 }}
+    synchronous_node_count: {{ _config_synchronous_node_count }}
     synchronous_standby_names: "*"
+    postgresql:
+      use_pg_rewind: true
+      remove_data_directory_on_rewind_failure: true
+      remove_data_directory_on_diverged_timelines: true
+      use_slots: true
+      parameters:
+        wal_level: logical
+        hot_standby: "on"
+        wal_keep_segments: 8
+        max_wal_senders: 10
+        max_replication_slots: 10
+        max_worker_processes: 8
+        wal_log_hints: "on"
+        track_commit_timestamp: "off"
+      pg_hba:
+        - local   all             all                                     peer
+        - host    all             all             127.0.0.1/32            md5
+        - host    all             all             ::1/128                 md5
+        - host    all             all             0.0.0.0/0               md5
+        - host    replication     {{ _config_replication_username }}             127.0.0.1/32            md5
+        - host    replication     {{ _config_replication_username }}             ::1/128                 md5
+        - host    replication     {{ _config_replication_username }}             0.0.0.0/0               md5
   method: initdb
-  postgresql:
-{% if _standby %}
-  standby_cluster:
-{% endif %}
-  slots:
-{{ _cluster_slots | indent(width=4) }}
   initdb:
     - data-checksums
+  slots:
+    {{ _config_slots | indent(width=4) }}
+consul:
+  host: 127.0.0.1:8500
+postgresql:
+  use_unix_socket: true
+  listen: 0.0.0.0:5432
+  connect_address: {{ _config_address }}
+  data_dir: {{ _config_datadir }}
+  config_dir: {{ _config_configdir }}
+  bin_dir: {{ _config_bindir }}
+  parameters:
+    unix_socket_directories: "{{ _config_socketdir }},/tmp"
+  authentication:
+    superuser:
+      username: postgres
+      password:
+    replication:
+      username: {{ _config_replication_username }}
+      password: {{ _config_replication_password }}
+#  post_init: /usr/local/bin/setup_cluster.sh
