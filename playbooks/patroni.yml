@@ -60,5 +60,5 @@
     - name: Start Patroni service
       ansible.builtin.service:
         name: patroni
-        state: running
+        state: started
         enabled: true
