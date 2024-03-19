@@ -15,4 +15,3 @@
         _hostname: "{{ hostvars[item]['ansible_hostname'] }}"
       loop: "{{ ansible_play_hosts }}"
       when: _patroni_config_hostnames
-
