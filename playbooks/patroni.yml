@@ -3,11 +3,30 @@
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
 
 - name: Query PostgreSQL cluster status
-  hosts: "{{ _patroni_cluster_group }}"
+  hosts: "{{ _patroni_cluster_hostgroup }}"
   become: true
   vars_files:
     - main.yml
   tasks:
+    - name: Register cluster hosts
+      ansible.builtin.add_host:
+        name: "{{ inventory_hostname }}"
+        groups: _cluster_all
+
+    - name: Set Patroni facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: End play for offline hosts
+      ansible.builtin.meta: end_host
+      vars:
+        _service_state: "{{ services[_postgresql_service_name].state | default('running') }}"
+      when: _service_state != 'running'
+
     - name: Query cluster status
       community.postgresql.postgresql_query:
         query: "SELECT pg_is_in_recovery()"
@@ -24,12 +43,14 @@
         _cluster_master: "{{ _is_master | bool }}"
         _cluster_slave: "{{ _is_slave | bool }}"
       vars:
-        _is_member: "{{ _slave_query is succeeded }}"
-        _is_alien: "{{ not _is_member | bool }}"
-        _is_slave: "{{ False if _is_alien else _slave_query.query_result[0].pg_is_in_recovery }}"
-        _is_master: "{{ _is_member | bool and not _is_slave | bool }}"
+        _service: "{{ _postgresql_service_name }}.service"
+        _is_installed: "{{ _service in services }}"
+        _is_alien: "{{ (not _is_installed) or (_slave_query is failed) }}"
+        _is_member: "{{ not _is_alien }}"
+        _is_slave: "{{ _is_member and _slave_query.query_result[0].pg_is_in_recovery }}"
+        _is_master: "{{ _is_member and not _is_slave }}"
 
-    - name: Group deployed hosts
+    - name: Group cluster members
       ansible.builtin.group_by:
         key: "_cluster_{{ 'alien' if _cluster_alien else _status }}"
       vars:
@@ -37,6 +58,7 @@
 
     - name: Set hostgroup facts
       ansible.builtin.set_fact:
+        _hosts_cluster: "{{ ansible_play_hosts_all }}"
         _hosts_aliens: "{{ _aliens | difference(_bootstrap) }}"
         _hosts_masters: "{{ _masters }}"
         _hosts_slaves: "{{ _slaves | difference(_bootstrap) }}"
@@ -45,32 +67,46 @@
         _aliens: "{{ groups['_cluster_alien'] | default([]) }}"
         _masters: "{{ groups['_cluster_master'] | default([]) }}"
         _slaves: "{{ groups['_cluster_slave'] | default([]) }}"
-        _bootstrap: "{{ [] if (_masters | length > 0) else [(_aliens + _slaves) | first] }} "
-      run_once: true
+        _bootstrap: "{{ [] if (_masters | length > 0) else [(_slaves + _aliens) | first] }} "
 
     - name: Verify cluster status
       ansible.builtin.assert:
         that:
           - _unique_master | bool
-          - _slaves_have_master | bool
-        fail_msg: "PostgreSQL cluster is in an inconsistent state"
+          - _slaves_have_master | bool or _slave_recover | bool
+        fail_msg: "Patroni cluster is in an inconsistent state"
       vars:
         _unique_master: "{{ _hosts_masters | length < 2 }}"
         _has_master: "{{ _hosts_masters | length > 0  }}"
         _has_slaves: "{{ _hosts_slaves | length > 0 }}"
         _slaves_have_master: "{{ not _has_slaves or _has_master }}"
+        _slave_recover: "{{ _hosts_slaves | length == 1 and not _has_master }}"
 
     - name: Debug cluster bootstrap status
       ansible.builtin.debug:
-        msg: |
-          Bootstrapping new cluster on hosts [{{ ','.join(play_hosts) }}]
-          with master {{ _bootstrap | first }}
-      when: _bootstrap | length > 0
+        msg: "Bootstrapping new cluster on hosts {{ _hosts }} with master {{ _master }}"
+      vars:
+        _hosts: "[{{ ','.join(play_hosts) }}]"
+        _master: "{{ _hosts_bootstrap | first }}"
+      when: _hosts_bootstrap | length > 0
 
-    - fail:
+    - name: Debug host cluster role
+      ansible.builtin.debug:
+        msg: "Adding host to {{  'master' if _master else ('bootstrap' if _bootstrap else 'alien') }} role"
+      vars:
+        _master: "{{ inventory_hostname in _hosts_masters }}"
+        _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
+        _slave: "{{ inventory_hostname in _hosts_slaves }}"
+
+    - name: Create cluster role groups
+      ansible.builtin.group_by:
+        key: "_patroni_cluster_{{ 'master' if _master else ('bootstrap' if _bootstrap else 'slave') }}"
+      vars:
+        _master: "{{ inventory_hostname in _hosts_masters }}"
+        _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
 
 
-- name: Deploy Patroni components
+- name: Deploy Patroni cluster members
   hosts: "{{ _patroni_cluster_hostgroup }}"
   become: true
   vars_files:
@@ -100,7 +136,7 @@
         - config.yml.in
         - dcs.yml
 
-    - name: Bootstrap cluster configuration
+    - name: Manage cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_path }}/config.yml"
@@ -124,7 +160,31 @@
         _config_replication_username: "{{ _patroni_cluster_replication_username }}"
         _config_replication_password: "{{ _patroni_cluster_replication_password }}"
 
-    - name: Start Patroni service
+    - name: Set cluster facts
+      ansible.builtin.set_fact:
+        _bootstrap_hostgroup: _patroni_cluster_bootstrap
+
+    - name: Bootstrap Patroni cluster
+      when: _bootstrap_hostgroup in groups
+      block:
+        - name: Start Patroni bootstrap service
+          ansible.builtin.service:
+            name: patroni
+            state: started
+            enabled: true
+
+        - name: Wait for cluster initialization
+          community.postgresql.postgresql_query:
+            query: "SELECT pg_is_in_recovery()"
+            db: postgres
+          become: true
+          become_user: "{{ _postgresql_user }}"
+          register: _slave_query
+          retries: 6
+          delay: 10
+          failed_when: _slave_query is failed or (_slave_query.query_result[0].pg_is_in_recovery | bool)
+
+    - name: Start Patroni bootstrap service
       ansible.builtin.service:
         name: patroni
         state: started
