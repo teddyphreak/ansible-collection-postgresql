@@ -8,6 +8,7 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 ## ToDo
 * Test dataplane integration
 * Add ident bootstrap entry if admin user is different from postgres
+* Add support for EL (requires EL config file relocation support from [nephelaiio.postgresql](https://github.com/nephelaiio/ansible-role-postgresql)) role
 
 ## Collection hostgroups
 
@@ -60,7 +61,6 @@ Role is tested against the following distributions (docker images):
 
   * Ubuntu Jammy
   * Ubuntu Focal
-  * Rocky Linux 9
 
 You can test the collection directly from sources using command `make test`
 

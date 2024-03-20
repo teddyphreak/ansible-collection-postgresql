@@ -139,10 +139,10 @@
         dest: "{{ _patroni_cluster_config_path }}/config.yml"
         force: false
       vars:
+        _slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_size: "{{ _cluster_hosts | length }}"
-        _cluster_slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] }}"
-        _cluster_slots: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _cluster_slot) | join(',') }} ]"
+        _cluster_slots: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
         _config_cluster_name: "{{ _patroni_cluster_name }}"
         _config_datadir: "{{ _postgresql_datadir }}"
         _config_socketdir: "{{ _postgresql_socketdir }}"
