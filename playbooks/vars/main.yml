@@ -1,4 +1,5 @@
 ---
+postgresql_release: "{{ _patroni_cluster_release }}"
 postgresql_service_state: stopped
 postgresql_service_masked: true
 postgresql_service_enabled: false
@@ -6,6 +7,8 @@ postgresql_pip_manage: false
 
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
 
+_patroni_cluster_release: "16"
+_patroni_cluster_service_name: "patroni"
 _patroni_cluster_name: "{{ patroni_cluster_name }}"
 _patroni_cluster_api_username: "{{ patroni_cluster_api_username | default('patroni') }}"
 _patroni_cluster_api_password: "{{ patroni_cluster_api_password }}"

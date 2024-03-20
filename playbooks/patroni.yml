@@ -191,6 +191,6 @@
 
     - name: Start Patroni bootstrap service
       ansible.builtin.service:
-        name: patroni
+        name: "{{ _patroni_cluster_service_name }}"
         state: started
         enabled: true

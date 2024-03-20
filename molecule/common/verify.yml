@@ -11,7 +11,7 @@
 
     - name: Check client version
       ansible.builtin.assert:
-        that: _version.startswith(_postgresql_release)
+        that: _version.startswith(_patroni_cluster_release)
       vars:
         _version: "{{ _psql_version.stdout.split(' ')[2] }}"
 
@@ -20,9 +20,4 @@
 
     - name: Check db services
       ansible.builtin.assert:
-        that:
-          - postgresql_service in services
-          - services[postgresql_service].status == 'masked'
-          - services[postgresql_service].state == _stopped
-      vars:
-        _stopped: "{{ (ansible_os_family == 'RedHat') | ternary('inactive', 'stopped') }}"
+        that: services[_patroni_cluster_service_name].state == 'running'
