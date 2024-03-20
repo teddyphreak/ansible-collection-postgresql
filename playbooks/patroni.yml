@@ -13,7 +13,7 @@
         name: "{{ inventory_hostname }}"
         groups: _cluster_all
 
-    - name: Set Patroni facts
+    - name: Set PostgreSQL facts
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
         tasks_from: vars.yml
@@ -121,6 +121,11 @@
           - _patroni_cluster_name is defined
           - _patroni_cluster_api_password is defined
           - _patroni_cluster_replication_password is defined
+
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
 
     - name: Install Patroni
       ansible.builtin.package:
