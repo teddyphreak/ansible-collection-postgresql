@@ -1,13 +1,26 @@
 ---
+_patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
 
-# Overridable values
-_postgresql_release: "{{ postgresql_release | default('16') }}"
-_postgresql_user: "{{ postgresql_user | default('postgres') }}"
-_postgresql_group: "{{ postgresql_group | default('postgres') }}"
-_postgresql_db_group: "{{ postgresql_psql_group | default('postgresql_db') }}"
-_postgresql_barman_group: "{{ postgresql_barman_group | default('postgresql_barman') }}"
-_postgresql_config_hostnames: "{{ postgresql_config_hostnames | default(True) }}"
+_patroni_cluster_release: "16"
+_patroni_cluster_service_name: "patroni"
+_patroni_cluster_name: "{{ patroni_cluster_name }}"
+_patroni_cluster_api_username: "{{ patroni_cluster_api_username | default('patroni') }}"
+_patroni_cluster_api_password: "{{ patroni_cluster_api_password }}"
+_patroni_cluster_postgres_password: "{{ patroni_cluster_postgres_password }}"
+_patroni_cluster_replication_username: "{{ patroni_cluster_replication_username | default('replicator') }}"
+_patroni_cluster_replication_password: "{{ patroni_cluster_replication_password }}"
+_patroni_cluster_hostgroup: "{{ patroni_cluster | default('patroni_cluster') }}"
+_patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
+_patroni_cluster_config_path: "/etc/patroni"
 
-# Hardcoded values
-_postgresql_db_hosts: "{{ groups[_postgresql_db_group] }}"
-_postgresql_barman_hosts: "{{ groups[_postgresql_barman_group] }}"
+_patroni_barman_hostgroup: "{{ patroni_barman | default('patroni_barman') }}"
+
+_patroni_consul_hostgroup: "{{ patroni_consul | default('patroni_consul') }}"
+_patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
+_patroni_consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
+_patroni_consul_backup_minutes: "{{ patroni_consul_backup_period | default('*/5') }}"
+_patroni_consul_backup_hours: "{{ patroni_consul_backup_period | default('*') }}"
+_patroni_consul_backup_days: "{{ patroni_consul_backup_period | default('*') }}"
+_patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
+_patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
+_patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"

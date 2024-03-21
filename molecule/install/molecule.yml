@@ -7,7 +7,7 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: postgresql-install-db01
+  - name: patroni-cluster-01
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -19,8 +19,8 @@ platforms:
       - /tmp
       - /opt
     groups:
-      - postgresql_db
-  - name: postgresql-install-db02
+      - patroni_cluster
+  - name: patroni-cluster-02
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -32,8 +32,8 @@ platforms:
       - /tmp
       - /opt
     groups:
-      - postgresql_db
-  - name: postgresql-install-db03
+      - patroni_cluster
+  - name: patroni-cluster-03
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -45,7 +45,46 @@ platforms:
       - /tmp
       - /opt
     groups:
-      - postgresql_db
+      - patroni_cluster
+  - name: patroni-consul-01
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - patroni_consul
+  - name: patroni-consul-02
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - patroni_consul
+  - name: patroni-consul-03
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - patroni_consul
 provisioner:
   name: ansible
   config_options:
@@ -61,10 +100,23 @@ provisioner:
     hosts:
       all:
         vars:
-          postgresql_config_hostnames: false
+          patroni_config_hostnames: false
+          patroni_consul_backuppath: /backup
+          patroni_cluster_name: molecule
+          patroni_cluster_api_password: molecule
+          patroni_cluster_postgres_password: molecule
+          patroni_cluster_replication_password: molecule
 verifier:
   name: ansible
 scenario:
+  prepare_sequence:
+    - prepare
+  converge_sequence:
+    - converge
+  destroy_sequence:
+    - destroy
+  cleanup_sequence:
+    - cleanup
   test_sequence:
     - dependency
     - create

@@ -1,7 +1,7 @@
 ---
 namespace: nephelaiio
-name: postgresql
-version: 1.0.0
+name: patroni
+version: 0.0.1
 readme: README.md
 authors:
   - Ted Cook <358176+teddyphreak@users.noreply.github.com>
@@ -10,10 +10,11 @@ license:
   - MIT
 tags:
   - postgresql
+  - patroni
 dependencies:
   "nephelaiio.plugins": "*"
-repository: http://github.com/nephelaiio/ansible-collection-postgresql
-documentation: http://github.com/nephelaiio/ansible-collection-postgresql
-homepage: http://github.com/nephelaiio/ansible-collection-postgresql
-issues: http://github.com/nephelaiio/ansible-collection-postgresql/issues
+repository: http://github.com/nephelaiio/ansible-collection-patroni
+documentation: http://github.com/nephelaiio/ansible-collection-patroni
+homepage: http://github.com/nephelaiio/ansible-collection-patroni
+issues: http://github.com/nephelaiio/ansible-collection-patroni/issues
 build_ignore: []

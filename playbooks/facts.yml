@@ -1,0 +1,12 @@
+---
+- name: Set Patroni cluster facts
+  hosts: "{{ _patroni_cluster_hostgroup }}"
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Set cluster address facts
+      ansible.builtin.set_fact:
+        postgresql_cluster_address: "{{ _hostname if (patroni_config_hostnames | bool) else _address }}"
+      vars:
+        _hostname: "{{ inventory_hostname }}"
+        _address: "{{ ansible_default_ipv4.address }}"

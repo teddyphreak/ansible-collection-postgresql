@@ -1,6 +1,0 @@
----
-- name: Prepare cluster nodes
-  ansible.builtin.import_playbook: nephelaiio.postgresql.prepare
-
-- name: Install PostgreSQL nodes
-  ansible.builtin.import_playbook: nephelaiio.postgresql.install

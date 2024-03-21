@@ -1,18 +1,9 @@
 ---
 - name: Prepare PostgreSQL cluster members
-  hosts: "{{ _postgresql_db_group }}:{{ _postgresql_barman_group }}"
-  become: true
+  hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}:{{ _patroni_consul_hostgroup }}"
   vars_files:
     - main.yml
   tasks:
-    - name: Include pip role
-      ansible.builtin.include_role:
-        name: nephelaiio.postgresql.pip
-
-    - name: Install rsync
-      ansible.builtin.package:
-        name: rsync
-
     - name: Add host entries for cluster members
       ansible.builtin.lineinfile:
         path: /etc/hosts
@@ -23,4 +14,8 @@
         _fqdn: "{{ hostvars[item]['ansible_fqdn'] }}"
         _hostname: "{{ hostvars[item]['ansible_hostname'] }}"
       loop: "{{ ansible_play_hosts }}"
-      when: _postgresql_config_hostnames
+      when: _patroni_config_hostnames
+
+    - name: Install cron
+      ansible.builtin.package:
+        name: cron

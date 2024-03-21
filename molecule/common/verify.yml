@@ -1,6 +1,6 @@
 ---
 - name: Verify package installation
-  hosts: postgresql_db
+  hosts: patroni_cluster
   any_errors_fatal: true
   vars_files:
     - ../../playbooks/vars/main.yml
@@ -11,7 +11,7 @@
 
     - name: Check client version
       ansible.builtin.assert:
-        that: _version.startswith(_postgresql_release)
+        that: _version.startswith(_patroni_cluster_release)
       vars:
         _version: "{{ _psql_version.stdout.split(' ')[2] }}"
 
@@ -20,8 +20,4 @@
 
     - name: Check db services
       ansible.builtin.assert:
-        that:
-          - postgresql_service in services
-          - services[postgresql_service].status == 'enabled'
-          - services[postgresql_service].state == 'running'
-      vars:
+        that: services[_patroni_cluster_service_name].state == 'running'
