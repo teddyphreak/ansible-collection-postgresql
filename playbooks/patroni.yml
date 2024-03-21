@@ -59,15 +59,12 @@
     - name: Set hostgroup facts
       ansible.builtin.set_fact:
         _hosts_cluster: "{{ ansible_play_hosts_all }}"
-        _hosts_aliens: "{{ _aliens | difference(_bootstrap) }}"
         _hosts_masters: "{{ _masters }}"
-        _hosts_slaves: "{{ _slaves | difference(_bootstrap) }}"
-        _hosts_bootstrap: "{{ _bootstrap }}"
+        _hosts_slaves: "{{ _slaves }}"
       vars:
         _aliens: "{{ groups['_cluster_alien'] | default([]) }}"
         _masters: "{{ groups['_cluster_master'] | default([]) }}"
         _slaves: "{{ groups['_cluster_slave'] | default([]) }}"
-        _bootstrap: "{{ [] if (_masters | length > 0) else [(_slaves + _aliens) | first] }} "
 
     - name: Verify cluster status
       ansible.builtin.assert:
@@ -82,28 +79,17 @@
         _slaves_have_master: "{{ not _has_slaves or _has_master }}"
         _slave_recover: "{{ _hosts_slaves | length == 1 and not _has_master }}"
 
-    - name: Debug cluster bootstrap status
-      ansible.builtin.debug:
-        msg: "Bootstrapping new cluster on hosts {{ _hosts }} with master {{ _master }}"
-      vars:
-        _hosts: "[{{ ','.join(play_hosts) }}]"
-        _master: "{{ _hosts_bootstrap | first }}"
-      when: _hosts_bootstrap | length > 0
-
     - name: Debug host cluster role
       ansible.builtin.debug:
-        msg: "Adding host to {{  'master' if _master else ('bootstrap' if _bootstrap else 'alien') }} role"
+        msg: "Adding host to {{ 'master' if _master else 'slave' }} role"
       vars:
         _master: "{{ inventory_hostname in _hosts_masters }}"
-        _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
-        _slave: "{{ inventory_hostname in _hosts_slaves }}"
 
     - name: Create cluster role groups
       ansible.builtin.group_by:
-        key: "_patroni_cluster_{{ 'master' if _master else ('bootstrap' if _bootstrap else 'slave') }}"
+        key: "_patroni_cluster_{{ 'master' if _master else 'slave' }}"
       vars:
         _master: "{{ inventory_hostname in _hosts_masters }}"
-        _bootstrap: "{{ inventory_hostname in _hosts_bootstrap }}"
 
 
 - name: Deploy Patroni cluster members
@@ -113,7 +99,6 @@
     - main.yml
   roles:
     - nephelaiio.patroni.pgdg
-    - nephelaiio.patroni.postgresql
   tasks:
     - name: Check required parameters
       ansible.builtin.assert:
@@ -121,11 +106,18 @@
           - _patroni_cluster_name is defined
           - _patroni_cluster_api_password is defined
           - _patroni_cluster_replication_password is defined
+          - _patroni_cluster_postgres_password is defined
 
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
-        tasks_from: vars.yml
+      vars:
+        postgresql_release: "{{ _patroni_cluster_release }}"
+        postgresql_initdb: false
+        postgresql_service_state: stopped
+        postgresql_service_masked: true
+        postgresql_service_enabled: false
+        postgresql_pip_manage: false
 
     - name: Install Patroni
       ansible.builtin.package:
@@ -164,6 +156,7 @@
         _config_api_password: "{{ _patroni_cluster_api_password }}"
         _config_replication_username: "{{ _patroni_cluster_replication_username }}"
         _config_replication_password: "{{ _patroni_cluster_replication_password }}"
+        _config_postgres_password: "{{ _patroni_cluster_postgres_password }}"
 
     - name: Set cluster facts
       ansible.builtin.set_fact:

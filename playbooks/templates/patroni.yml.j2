@@ -1,12 +1,32 @@
 ---
 scope: {{ _config_cluster_name }}
 name: {{ _config_host_name }}
+log:
+  level: WARNING
 restapi:
   listen: 0.0.0.0:8008
   connect_address: {{ _config_address }}:8008
   authentication:
     username: {{ _config_api_username }}
     password: {{ _config_api_password }}
+consul:
+  host: 127.0.0.1:8500
+postgresql:
+  use_unix_socket: true
+  listen: 0.0.0.0:5432
+  connect_address: {{ _config_address }}
+  data_dir: {{ _config_datadir }}
+  config_dir: {{ _config_configdir }}
+  bin_dir: {{ _config_bindir }}
+  parameters:
+    unix_socket_directories: "{{ _config_socketdir }},/tmp"
+  authentication:
+    postgres:
+      username: postgres
+      password: {{ _config_postgres_password }}
+    replicator:
+      username: {{ _config_replication_username }}
+      password: {{ _config_replication_password }}
 bootstrap:
   dcs:
     loop_wait: 2
@@ -45,22 +65,4 @@ bootstrap:
     - data-checksums
   slots:
     {{ _config_slots | indent(width=4) }}
-consul:
-  host: 127.0.0.1:8500
-postgresql:
-  use_unix_socket: true
-  listen: 0.0.0.0:5432
-  connect_address: {{ _config_address }}
-  data_dir: {{ _config_datadir }}
-  config_dir: {{ _config_configdir }}
-  bin_dir: {{ _config_bindir }}
-  parameters:
-    unix_socket_directories: "{{ _config_socketdir }},/tmp"
-  authentication:
-    superuser:
-      username: postgres
-      password:
-    replication:
-      username: {{ _config_replication_username }}
-      password: {{ _config_replication_password }}
 #  post_init: /usr/local/bin/setup_cluster.sh

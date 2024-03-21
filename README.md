@@ -28,6 +28,7 @@ Cluster wide parameters
 | patroni_cluster_name                 |                             n/a | Patroni cluster name                    | true     |
 | patroni_cluster_api_username         |                         patroni | Patroni cluster restapi username        | false    |
 | patroni_cluster_api_password         |                             n/a | Patroni cluster restapi password        | true     |
+| patroni_cluster_postgres_password    |                             n/a | Patroni cluster replication  password   | true     |
 | patroni_cluster_replication_username |                      replicator | Patroni cluster replication username    | false    |
 | patroni_cluster_replication_password |                             n/a | Patroni cluster replication  password   | true     |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration | false    |
