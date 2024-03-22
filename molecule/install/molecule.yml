@@ -103,6 +103,7 @@ provisioner:
           patroni_config_hostnames: false
           patroni_consul_backuppath: /backup
           patroni_cluster_name: molecule
+          patroni_cluster_watchdog: false
           patroni_cluster_api_password: molecule
           patroni_cluster_postgres_password: molecule
           patroni_cluster_replication_password: molecule

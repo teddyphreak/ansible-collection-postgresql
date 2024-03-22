@@ -1,5 +1,5 @@
 ---
-- name: Prepare PostgreSQL cluster members
+- name: Prepare Patroni stack members
   hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}:{{ _patroni_consul_hostgroup }}"
   vars_files:
     - main.yml
@@ -19,3 +19,19 @@
     - name: Install cron
       ansible.builtin.package:
         name: cron
+
+- name: Prepare Patroni cluster members
+  hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}:{{ _patroni_consul_hostgroup }}"
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Configure watchdog support
+      when: _patroni_cluster_watchdog | bool
+      block:
+        - name: Load watchdog module
+          community.general.modprobe:
+            name: watchdog
+            persistent: present
+
+        - name: Set watchdog permissions
+          ansible.builtin.command: "chown {{ _postgresql_user }}:{{ _postresql_group }} /dev/watchdog

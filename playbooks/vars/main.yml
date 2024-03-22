@@ -2,6 +2,7 @@
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
 
 _patroni_cluster_release: "16"
+_patroni_cluster_watchdog: "{{ patroni_cluster_watchdog | default(True) }}"
 _patroni_cluster_service_name: "patroni"
 _patroni_cluster_name: "{{ patroni_cluster_name }}"
 _patroni_cluster_api_username: "{{ patroni_cluster_api_username | default('patroni') }}"
