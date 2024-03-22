@@ -21,3 +21,62 @@
     - name: Check db services
       ansible.builtin.assert:
         that: services[_patroni_cluster_service_name].state == 'running'
+
+    - name: Gather postgresql info
+      community.postgresql.postgresql_info:
+        filter:
+          - "databases"
+          - "roles"
+      become: true
+      become_user: "{{ _postgresql_user }}"
+      register: postgresql_info
+
+    - name: Verify requested databases
+      ansible.builtin.assert:
+        that: _missing_dbs | length == 0
+        fail_msg: |
+          Unable to find databases [{{ _requested_dbs | join(',') }}] on server.
+          Existing DBs are [{{ _existing_dbs | join(',') }}]
+      vars:
+        _existing_dbs: "{{ postgresql_info.databases | dict2items | map(attribute='key') }}"
+        _requested_dbs: "{{ patroni_cluster_databases | default([]) | map(attribute='name') }}"
+        _missing_dbs: "{{ _requested_dbs | reject('in', _existing_dbs) }}"
+
+    - name: Verify requested roles
+      ansible.builtin.assert:
+        that: _missing_roles | length == 0
+        fail_msg: |
+          Unable to find roles [{{ _missing_roles | join(',') }}] on server
+          Existing roles are [{{ _existing_roles | join(',') }}]
+      vars:
+        _existing_roles: "{{ postgresql_info.roles | dict2items | map(attribute='key') }}"
+        _requested_roles: "{{ patroni_cluster_roles | default([]) | map(attribute='name') }}"
+        _missing_roles: "{{ _requested_roles | reject('in', _existing_roles) }}"
+
+    - name: Verify user groups
+      ansible.builtin.assert:
+        that: item.groups | rejectattr('name', 'in', _role_groups) | length == 0
+        fail_msg: "Role {{ item.name }} is not a member of groups [{{ _role_groups | join(',') }}]"
+      vars:
+        _existing_roles: "{{ postgresql_info.roles | dict2items }}"
+        _role_groups: "{{ _existing_roles | rejectattr('value.canlogin') | map(attribute='key') }}"
+      loop_control:
+        label: "{{ item.name }}"
+      loop: "{{ patroni_cluster_roles | default([]) | selectattr('groups', 'defined') }}"
+
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
+    - name: Query data checksum
+      community.postgresql.postgresql_query:
+        db: postgres
+        query: 'SHOW data_checksums'
+      become: true
+      become_user: "{{ _postgresql_user }}"
+      register: postgresql_checksums
+
+    - name: Verify data checksum
+      ansible.builtin.assert:
+        that: postgresql_checksums.query_result[0].data_checksums == "on"

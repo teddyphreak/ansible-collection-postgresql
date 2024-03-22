@@ -7,7 +7,7 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: patroni-install-cluster-01
+  - name: patroni-databases-cluster-01
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -20,7 +20,7 @@ platforms:
       - /opt
     groups:
       - patroni_cluster
-  - name: patroni-install-cluster-02
+  - name: patroni-databases-cluster-02
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -33,7 +33,7 @@ platforms:
       - /opt
     groups:
       - patroni_cluster
-  - name: patroni-install-cluster-03
+  - name: patroni-databases-cluster-03
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -46,7 +46,7 @@ platforms:
       - /opt
     groups:
       - patroni_cluster
-  - name: patroni-install-consul-01
+  - name: patroni-databases-consul-01
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -59,7 +59,7 @@ platforms:
       - /opt
     groups:
       - patroni_consul
-  - name: patroni-install-consul-02
+  - name: patroni-databases-consul-02
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -72,7 +72,7 @@ platforms:
       - /opt
     groups:
       - patroni_consul
-  - name: patroni-install-consul-03
+  - name: patroni-databases-consul-03
     image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     cgroupns_mode: host
@@ -108,6 +108,31 @@ provisioner:
           patroni_cluster_replication_password: molecule
           patroni_watchdog_enable: false
           patroni_watchdog_mode: off
+          patroni_cluster_roles:
+            - name: admin
+              password: admin
+              groups:
+                - name: admins
+            - name: user
+              password: user
+              groups:
+                - name: read_only
+            - name: admins
+              role_attr_flags: "NOLOGIN"
+            - name: read_only
+              role_attr_flags: "NOLOGIN"
+          patroni_cluster_databases:
+            - name: database
+              encoding: "UNICODE"
+              roles:
+                - name: admins
+                  privs: ALL
+                  type: database
+                  objs: database
+                - name: read_only
+                  privs: ALL
+                  type: database
+                  objs: database
 verifier:
   name: ansible
 scenario:

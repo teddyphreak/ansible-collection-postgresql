@@ -32,6 +32,8 @@ Cluster wide parameters
 | Parameter                            |                         Default | Description                             | Required |
 |:-------------------------------------|--------------------------------:|:----------------------------------------|:---------|
 | patroni_cluster_name                 |                             n/a | Patroni cluster name                    | true     |
+| patroni_cluster_databases            |                              [] | Patroni cluster databases               | false    |
+| patroni_cluster_roles                |                              [] | Patroni cluster roles               | false    |
 | patroni_cluster_api_username         |                         patroni | Patroni cluster restapi username        | false    |
 | patroni_cluster_api_password         |                             n/a | Patroni cluster restapi password        | true     |
 | patroni_cluster_postgres_password    |                             n/a | Patroni cluster replication  password   | true     |

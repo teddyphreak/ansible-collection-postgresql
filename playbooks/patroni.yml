@@ -112,12 +112,8 @@
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
       vars:
-        postgresql_release: "{{ _patroni_cluster_release }}"
-        postgresql_initdb: false
-        postgresql_service_state: stopped
-        postgresql_service_masked: true
-        postgresql_service_enabled: false
-        postgresql_pip_manage: false
+        postgresql_role_manage: false
+        postgresql_database_manage: false
 
     - name: Install Patroni
       ansible.builtin.package:
@@ -136,7 +132,7 @@
     - name: Manage cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
-        dest: "{{ _patroni_cluster_config_path }}/config.yml"
+        dest: "{{ _patroni_cluster_config_file }}"
         force: false
       vars:
         _slot: "[ '%s', { 'type': 'physical' } ]"
@@ -188,3 +184,38 @@
         name: "{{ _patroni_cluster_service_name }}"
         state: started
         enabled: true
+
+    - name: Manage PostgreSQL base config
+      ansible.builtin.template:
+        src: postgresql.conf.j2
+        dest: "{{ _postgresql_confdir }}/postgresql.base.conf"
+        owner: "{{ _postgresql_user }}"
+        group: "{{ _postgresql_group }}"
+        mode: 0644
+      notify: patroni_reload
+
+    - name: Manage Patroni profile
+      ansible.builtin.lineinfile:
+        path: "/etc/profile.d/patroni.sh"
+        line: "alias patronictl='patronictl -c {{ _patroni_cluster_config_file }}'"
+        state: "{{ (postgresql_package_state == 'absent') | ternary('absent', 'present') }}"
+        create: true
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Manage Patroni databases
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+      vars:
+        postgresql_role_manage: true
+        postgresql_database_manage: true
+
+  handlers:
+    - name: Reload Patroni
+      ansible.builtin.service:
+        name: "{{ _patroni_cluster_service_name }}"
+        state: reloaded
+      listen:
+        - patroni_reload
+        - postgresql_reload
