@@ -1,8 +1,10 @@
 ---
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
 
+_patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
+_patroni_watchdog_mode: "{{ patroni_watchdog_mode | default(_patroni_watchdog_enable | bool | ternary('required', 'off')) }}"
+
 _patroni_cluster_release: "16"
-_patroni_cluster_watchdog: "{{ patroni_cluster_watchdog | default(True) }}"
 _patroni_cluster_service_name: "patroni"
 _patroni_cluster_name: "{{ patroni_cluster_name }}"
 _patroni_cluster_api_username: "{{ patroni_cluster_api_username | default('patroni') }}"

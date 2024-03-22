@@ -32,12 +32,13 @@ Cluster wide parameters
 | Parameter                            |                         Default | Description                             | Required |
 |:-------------------------------------|--------------------------------:|:----------------------------------------|:---------|
 | patroni_cluster_name                 |                             n/a | Patroni cluster name                    | true     |
-| patroni_cluster_watchdog             |                            true | Enable watchdog service                 | false     |
 | patroni_cluster_api_username         |                         patroni | Patroni cluster restapi username        | false    |
 | patroni_cluster_api_password         |                             n/a | Patroni cluster restapi password        | true     |
 | patroni_cluster_postgres_password    |                             n/a | Patroni cluster replication  password   | true     |
 | patroni_cluster_replication_username |                      replicator | Patroni cluster replication username    | false    |
 | patroni_cluster_replication_password |                             n/a | Patroni cluster replication  password   | true     |
+| patroni_watchdog_enable              |                            true | Enable watchdog module                  | false    |
+| patroni_watchdog_mode                |                        required | Patroni watchdog mode                   | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration | false    |
 | patroni_consul_version               |                        'latest' | Consul version                          | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                  | false    |

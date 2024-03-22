@@ -157,6 +157,7 @@
         _config_replication_username: "{{ _patroni_cluster_replication_username }}"
         _config_replication_password: "{{ _patroni_cluster_replication_password }}"
         _config_postgres_password: "{{ _patroni_cluster_postgres_password }}"
+        _config_watchdog_mode: "{{ _patroni_watchdog_mode }}"
 
     - name: Set cluster facts
       ansible.builtin.set_fact:
