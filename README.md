@@ -6,9 +6,14 @@
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
 ## ToDo
+* Add HAProxy deployment playbook
+* Add PGCat deployment to install playbook
 * Test dataplane integration
-* Add ident bootstrap entry if admin user is different from postgres
-* Add support for EL (requires EL config file relocation support from [nephelaiio.postgresql](https://github.com/nephelaiio/ansible-role-postgresql)) role
+* Add feature to pin Consul packages
+* Add feature to pin Patroni packages
+* Refactor Consul playbook into independent collection
+* Refactor all collections with Consul deployments to pull from Consul collection
+* Add support for Rocky Linux
 
 ## Collection hostgroups
 
@@ -32,6 +37,8 @@ Cluster wide parameters
 | patroni_cluster_postgres_password    |                             n/a | Patroni cluster replication  password   | true     |
 | patroni_cluster_replication_username |                      replicator | Patroni cluster replication username    | false    |
 | patroni_cluster_replication_password |                             n/a | Patroni cluster replication  password   | true     |
+| patroni_watchdog_enable              |                            true | Enable watchdog module                  | false    |
+| patroni_watchdog_mode                |                        required | Patroni watchdog mode                   | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration | false    |
 | patroni_consul_version               |                        'latest' | Consul version                          | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                  | false    |
@@ -41,13 +48,6 @@ Cluster wide parameters
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component       | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component       | false    |
 | patroni_consul_backup_days           |                            '\*' | Consul snapshot cronjob component       | false    |
-
-## ToDo
-* Bootstrap Patroni cluster
-* Add feature to pin Consul packages
-* Add feature to pin Patroni packages
-* Refactor Consul playbook into independent collection
-* Refactor all collections with Consul deployments to pull from Consul collection
 
 ## Collection playbooks
 
