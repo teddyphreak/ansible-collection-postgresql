@@ -18,6 +18,10 @@
     - name: Gather service facts
       ansible.builtin.service_facts:
 
+    - name: Debug service status
+      ansible.builtin.debug:
+        msg: "{{ services[_patroni_cluster_service_name].state }}"
+
     - name: Check db services
       ansible.builtin.assert:
         that: services[_patroni_cluster_service_name].state == 'running'

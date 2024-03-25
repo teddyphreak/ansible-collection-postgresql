@@ -10,6 +10,8 @@ postgresql_conf_main_manage: false
 postgresql_databases: "{{ patroni_cluster_databases | default([]) }}"
 
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
+_patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
+_patroni_config_locale: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
 
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
 _patroni_watchdog_mode: "{{ patroni_watchdog_mode | default(_patroni_watchdog_enable | bool | ternary('required', 'off')) }}"

@@ -66,8 +66,8 @@ bootstrap:
   method: initdb
   initdb:
     - data-checksums
-    - encoding: UTF-8
-    - locale: UTF-8
+    - encoding: {{ _config_encoding }}
+    - locale: {{ _config_locale }}
   slots:
     {{ _config_slots | indent(width=4) }}
 #  post_init: /usr/local/bin/setup_cluster.sh
