@@ -125,8 +125,6 @@
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
       vars:
-        postgresql_role_manage: false
-        postgresql_database_manage: false
         postgresql_conf_main_file: "{{ _postgresql_conf_main_query.stat.exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
 
     - name: Install Patroni
@@ -200,7 +198,7 @@
         _groups_master: "_patroni_cluster_master"
 
     - name: Bootstrap Patroni cluster
-      when: _groups_master in groups
+      when: inventory_hostname in groups[_groups_master]
       block:
         - name: Start Patroni bootstrap service
           ansible.builtin.service:
@@ -253,9 +251,11 @@
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
       vars:
-        postgresql_role_manage: true
         postgresql_database_manage: true
-      when: _groups_master in groups
+        postgresql_role_manage: true
+        postgresql_databases: "{{ patroni_cluster_databases | default([]) }}"
+        postgresql_roles: "{{ patroni_cluster_roles | default([]) }}"
+      when: inventory_hostname in groups[_groups_master]
 
   handlers:
     - name: Reload Patroni
