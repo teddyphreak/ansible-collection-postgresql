@@ -35,6 +35,7 @@ jobs:
       matrix:
         scenario:
           - install
+          - databases
         image:
           - name: ubuntu2204
             command: /lib/systemd/systemd

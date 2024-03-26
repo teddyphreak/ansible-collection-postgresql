@@ -13,7 +13,6 @@ consul:
   host: 127.0.0.1:8500
 watchdog:
   mode: "{{ _config_watchdog_mode }}"
-
 postgresql:
   use_unix_socket: true
   listen: 0.0.0.0:5432
@@ -66,6 +65,8 @@ bootstrap:
   method: initdb
   initdb:
     - data-checksums
+    - encoding: {{ _config_encoding }}
+    - locale: {{ _config_locale }}
   slots:
     {{ _config_slots | indent(width=4) }}
 #  post_init: /usr/local/bin/setup_cluster.sh
