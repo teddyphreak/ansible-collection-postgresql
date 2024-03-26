@@ -6,7 +6,6 @@ postgresql_service_masked: true
 postgresql_service_enabled: false
 postgresql_pip_manage: false
 postgresql_locale: en_US.UTF-8
-postgresql_conf_main_manage: false
 postgresql_databases: "{{ patroni_cluster_databases | default([]) }}"
 
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
