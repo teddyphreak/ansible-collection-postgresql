@@ -46,6 +46,7 @@
         fail_msg: |
           Unable to find databases [{{ _requested_dbs | join(',') }}] on server.
           Existing DBs are [{{ _existing_dbs | join(',') }}]
+        success_msg: "Existing DBs are [{{ _existing_dbs | join(',') }}]"
       vars:
         _existing_dbs: "{{ postgresql_info.databases | dict2items | map(attribute='key') }}"
         _requested_dbs: "{{ patroni_cluster_databases | default([]) | map(attribute='name') }}"
@@ -57,6 +58,7 @@
         fail_msg: |
           Unable to find roles [{{ _missing_roles | join(',') }}] on server
           Existing roles are [{{ _existing_roles | join(',') }}]
+        success_msg: "Existing roles are [{{ _existing_roles | join(',') }}]"
       vars:
         _existing_roles: "{{ postgresql_info.roles | dict2items | map(attribute='key') }}"
         _requested_roles: "{{ patroni_cluster_roles | default([]) | map(attribute='name') }}"
