@@ -5,6 +5,11 @@
   vars_files:
     - ../../playbooks/vars/main.yml
   tasks:
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
     - name: Query client version
       ansible.builtin.command: psql --version
       register: _psql_version

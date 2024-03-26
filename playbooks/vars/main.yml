@@ -14,7 +14,7 @@ _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_repl
 _patroni_config_locale: "{{ postgresql_locale }}"
 
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
-_patroni_watchdog_mode: "{{ patroni_watchdog_mode | default(_patroni_watchdog_enable | bool | ternary('required', 'off')) }}"
+_patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('required', 'off') }}"
 
 _patroni_cluster_release: "16"
 _patroni_cluster_service_name: "patroni"
