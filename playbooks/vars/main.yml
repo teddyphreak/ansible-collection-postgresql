@@ -1,11 +1,11 @@
 ---
-postgresql_release: "{{ _patroni_cluster_release }}"
-postgresql_initdb: false
-postgresql_service_state: stopped
-postgresql_service_masked: true
-postgresql_service_enabled: false
-postgresql_pip_manage: false
-postgresql_locale: en_US.UTF-8
+# Defaults
+patroni_defaults_release_postgreql: '16.2-1'
+patroni_defaults_release_patroni: '3.2.2-2'
+
+# Overridable values
+_patroni_release_postgresql: "{{ patroni_release_postgresql | default(patroni_defaults_release_postgreql) }}"
+_patroni_release_patroni: "{{ patroni_release_postgresql | default(patroni_defaults_release_patroni) }}"
 
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
 _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
@@ -14,8 +14,8 @@ _patroni_config_locale: "{{ postgresql_locale }}"
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
 _patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('required', 'off') }}"
 
-_patroni_cluster_release: "16"
-_patroni_cluster_service_name: "patroni"
+_patroni_cluster_release: "{{ _patroni_release_postgresql | split('.') | first }}"
+_patroni_cluster_service_name: "{{ patroni_cluster_service_name | default('patroni') }}"
 _patroni_cluster_name: "{{ patroni_cluster_name }}"
 _patroni_cluster_api_username: "{{ patroni_cluster_api_username | default('patroni') }}"
 _patroni_cluster_api_password: "{{ patroni_cluster_api_password }}"
@@ -24,7 +24,7 @@ _patroni_cluster_replication_username: "{{ patroni_cluster_replication_username 
 _patroni_cluster_replication_password: "{{ patroni_cluster_replication_password }}"
 _patroni_cluster_hostgroup: "{{ patroni_cluster | default('patroni_cluster') }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
-_patroni_cluster_config_path: "/etc/patroni"
+_patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/patroni') }}"
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/config.yml"
 
 _patroni_barman_hostgroup: "{{ patroni_barman | default('patroni_barman') }}"
@@ -38,3 +38,15 @@ _patroni_consul_backup_days: "{{ patroni_consul_backup_period | default('*') }}"
 _patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
 _patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
 _patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"
+
+
+# Hardcoded values
+_patroni_groups_master: "_patroni_cluster_master"
+
+postgresql_release: "{{ _patroni_cluster_release }}"
+postgresql_initdb: false
+postgresql_service_state: stopped
+postgresql_service_masked: true
+postgresql_service_enabled: false
+postgresql_pip_manage: false
+postgresql_locale: en_US.UTF-8

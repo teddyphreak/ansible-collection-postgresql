@@ -94,7 +94,7 @@ provisioner:
   playbooks:
     prepare: ../common/prepare.yml
     converge: ../common/install.yml
-    side_effect: ../common/install.yml
+    side_effect: ../common/databases.yml
     verify: ../common/verify.yml
   inventory:
     hosts:
