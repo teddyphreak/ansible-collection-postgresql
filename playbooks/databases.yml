@@ -19,4 +19,4 @@
         postgresql_role_manage: true
         postgresql_databases: "{{ patroni_cluster_databases | default([]) }}"
         postgresql_roles: "{{ patroni_cluster_roles | default([]) }}"
-      when: inventory_hostname in groups[_groups_master]
+      when: inventory_hostname in groups[_patroni_groups_master]

@@ -2,6 +2,8 @@
 - name: Prepare
   hosts: all
   become: true
+  roles:
+    - nephelaiio.patroni.pgdg
   tasks:
     - name: Update apt repos
       ansible.builtin.apt:

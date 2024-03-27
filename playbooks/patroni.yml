@@ -101,12 +101,8 @@
           delay: 10
           failed_when: _slave_query is failed or (_slave_query.query_result[0].pg_is_in_recovery | bool)
 
-    - name: Set bootstrap facts
-      ansible.builtin.set_fact:
-        _groups_master: "_patroni_cluster_master"
-
     - name: Bootstrap Patroni cluster
-      when: inventory_hostname in groups[_groups_master]
+      when: inventory_hostname in groups[_patroni_groups_master]
       block:
         - name: Start Patroni bootstrap service
           ansible.builtin.service:

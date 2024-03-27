@@ -6,11 +6,11 @@
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
 ## ToDo
+* Add feature to pin Consul packages
+* Add feature to pin Patroni packages
 * Add HAProxy deployment playbook
 * Add PGCat deployment to install playbook
 * Test dataplane integration
-* Add feature to pin Consul packages
-* Add feature to pin Patroni packages
 * Refactor Consul playbook into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
 * Add support for Rocky Linux
