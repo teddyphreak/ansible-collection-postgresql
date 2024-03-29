@@ -4,15 +4,146 @@
 
 
 - name: Update cluster slaves
-  hosts: "_patroni_cluster_slave"
+  hosts: "_patroni_cluster_slave:!{{ _patroni_update_skip_hostgroup }}"
+  become: true
   serial: 1
+  vars_files:
+    - main.yml
+  vars:
+    update_reboot: false
+    update_cache_valid_time: 1
+  roles:
+    - nephelaiio.patroni.update
   tasks:
-    - debug:
-        msg: updating slaves
+    - name: Stat Patroni configuration file
+      ansible.builtin.stat:
+        path: "{{ _patroni_cluster_config_file }}"
+      register: _patroni_config_stat
+
+    - name: Slurp Patroni configuration
+      ansible.builtin.slurp:
+        path: "{{ _patroni_cluster_config_file }}"
+      register: _patroni_config_query
+
+    - name: Set Patroni configuration facts
+      ansible.builtin.set_fact:
+        _api_username: "{{ _config_data.restapi.authentication.username }}"
+        _api_password: "{{ _config_data.restapi.authentication.password }}"
+      vars:
+        _config_data: "{{ _patroni_config_query.content | ansible.builtin.b64decode | from_yaml }}"
+
+    - name: Verify replica liveness
+      ansible.builtin.uri:
+        url: "http://localhost:8008/liveness"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+
+    - name: Verify replica status
+      ansible.builtin.uri:
+        url: "http://localhost:8008/replica"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+
+    - name: Stop Patroni service
+      ansible.builtin.service:
+        name: patroni
+        state: stopped
+
+    - name: Reboot node
+      ansible.builtin.reboot:
+
+    - name: Verify replica status
+      ansible.builtin.uri:
+        url: "http://localhost:8008/replica?lag={{ _maxlag }}"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+      vars:
+        _conf_lag: "[{{ _patroni_cluster_maxlag_failover | int }}, {{ _patroni_cluster_maxlag_sync | int }}]"
+        _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
+      retries: 30
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
 
 - name: Update cluster master
-  hosts: "_patroni_cluster_master"
+  hosts: "_patroni_cluster_master:!{{ _patroni_update_skip_hostgroup }}"
+  become: true
+  vars_files:
+    - main.yml
+  vars:
+    update_reboot: false
+    update_cache_valid_time: 1
   tasks:
-    - debug:
-        msg: updating master
+    - name: Stat Patroni configuration file
+      ansible.builtin.stat:
+        path: "{{ _patroni_cluster_config_file }}"
+      register: _patroni_config_stat
+
+    - name: Slurp Patroni configuration
+      ansible.builtin.slurp:
+        path: "{{ _patroni_cluster_config_file }}"
+      register: _patroni_config_query
+
+    - name: Set Patroni configuration facts
+      ansible.builtin.set_fact:
+        _api_username: "{{ _config_data.restapi.authentication.username }}"
+        _api_password: "{{ _config_data.restapi.authentication.password }}"
+      vars:
+        _config_data: "{{ _patroni_config_query.content | ansible.builtin.b64decode | from_yaml }}"
+
+    - name: Verify primary liveness
+      ansible.builtin.uri:
+        url: "http://localhost:8008/liveness"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+
+    - name: Verify primary status
+      ansible.builtin.uri:
+        url: "http://localhost:8008/primary"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+        return_content: true
+
+    - name: Switchover cluster role
+      ansible.builtin.uri:
+        url: "http://localhost:8008/switchover"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: POST
+        body_format: json
+        body:
+          leader: "{{ inventory_hostname }}"
+        status_code: 200
+        return_content: true
+      register: _status_query
+
+    - name: Stop Patroni service
+      ansible.builtin.service:
+        name: patroni
+        state: stopped
+
+    - name: Reboot node
+      ansible.builtin.reboot:
+
+    - name: Verify replica status
+      ansible.builtin.uri:
+        url: "http://localhost:8008/replica?lag={{ _maxlag }}"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+        return_content: true
+      vars:
+        _conf_lag: "[{{ _patroni_cluster_maxlag_failover | int }}, {{ _patroni_cluster_maxlag_sync | int }}]"
+        _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
+      retries: 30
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"

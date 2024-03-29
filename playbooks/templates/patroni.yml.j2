@@ -16,7 +16,7 @@ watchdog:
 postgresql:
   use_unix_socket: true
   listen: 0.0.0.0:5432
-  connect_address: {{ _config_address }}
+  connect_address: {{ _config_address }}:5432
   data_dir: {{ _config_datadir }}
   config_dir: {{ _config_configdir }}
   bin_dir: {{ _config_bindir }}
@@ -34,9 +34,10 @@ bootstrap:
     loop_wait: 2
     ttl: 20
     retry_timeout: 3
-    maximum_lag_on_failover: 1048576
-    primary_start_timeout: 60
-    synchronous_mode: on
+    maximum_lag_on_failover: {{ _config_maxlag_failover | int }}
+    maximum_lag_syncnode: {{ _config_maxlag_sync | int }}
+    primary_start_timeout: {{ _config_start_timeout }}
+    synchronous_mode: off
     synchronous_mode_strict: off
     synchronous_node_count: {{ _config_synchronous_node_count }}
     synchronous_standby_names: "*"

@@ -1,6 +1,7 @@
 ---
 - name: Prepare Patroni stack members
   hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}:{{ _patroni_consul_hostgroup }}"
+  become: true
   vars_files:
     - main.yml
   tasks:
@@ -19,6 +20,7 @@
     - name: Install cron
       ansible.builtin.package:
         name: cron
+
 
 - name: Prepare Patroni cluster members
   hosts: "{{ _patroni_cluster_hostgroup }}"

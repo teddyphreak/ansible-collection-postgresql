@@ -12,3 +12,6 @@ roles:
   - name: consul
     src: https://github.com/ansible-community/ansible-consul.git
     version: master
+  - name: update
+    src: https://github.com/robertdebock/ansible-role-update.git
+    version: 3.1.7

@@ -5,93 +5,53 @@ dependency:
     role-file: requirements.yml
     requirements-file: requirements.yml
 driver:
-  name: docker
+  name: default
 platforms:
   - name: patroni-update-cluster-01
-    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    tmpfs:
-      - /tmp
-      - /opt
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 2
+    memory: 4
     groups:
       - patroni_cluster
   - name: patroni-update-cluster-02
-    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    tmpfs:
-      - /tmp
-      - /opt
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 2
+    memory: 4
     groups:
       - patroni_cluster
-  - name: patroni-install-cluster-03
-    image: "geerliupdate/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    tmpfs:
-      - /tmp
-      - /opt
+  - name: patroni-update-cluster-03
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 2
+    memory: 4
     groups:
       - patroni_cluster
   - name: patroni-update-consul-01
-    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    tmpfs:
-      - /tmp
-      - /opt
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 1
+    memory: 1
     groups:
       - patroni_consul
   - name: patroni-update-consul-02
-    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    tmpfs:
-      - /tmp
-      - /opt
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 1
+    memory: 1
     groups:
       - patroni_consul
   - name: patroni-update-consul-03
-    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    tmpfs:
-      - /tmp
-      - /opt
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 1
+    memory: 1
     groups:
       - patroni_consul
 provisioner:
   name: ansible
   config_options:
     defaults:
-      remote_tmp: /tmp
       callbacks_enabled: ansible.posix.profile_tasks
   playbooks:
+    create: ../common/create.yml
+    destroy: ../common/destroy.yml
+    cleanup: ../common/cleanup.yml
     prepare: ../common/prepare.yml
     converge: ../common/install.yml
     side_effect: ../common/update.yml
@@ -112,6 +72,8 @@ provisioner:
 verifier:
   name: ansible
 scenario:
+  create_sequence:
+    - create
   prepare_sequence:
     - prepare
   converge_sequence:

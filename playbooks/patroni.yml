@@ -80,7 +80,7 @@
         _config_host_name: "{{ ansible_hostname }}"
         _config_configdir: "{{ _postgresql_confdir }}"
         _config_bindir: "{{ _postgresql_bindir }}"
-        _config_address: "{{ ansible_default_ipv4.address }}:5432"
+        _config_address: "{{ ansible_default_ipv4.address }}"
         _config_slots: "{{ _cluster_slots | community.general.dict | to_nice_yaml(indent=2) }}"
         _config_synchronous_node_count: "{{ _cluster_size | int - 2 }}"
         _config_api_username: "{{ _patroni_cluster_api_username }}"
@@ -91,6 +91,9 @@
         _config_watchdog_mode: "{{ _patroni_watchdog_mode }}"
         _config_encoding: "{{ _patroni_config_encoding }}"
         _config_locale: "{{ _patroni_config_locale }}"
+        _config_maxlag_failover: "{{ _patroni_cluster_maxlag_failover }}"
+        _config_maxlag_sync: "{{ _patroni_cluster_maxlag_sync }}"
+        _config_start_timeout: "{{ _patroni_cluster_start_timeout }}"
 
     - name: Set cluster facts
       ansible.builtin.set_fact:
