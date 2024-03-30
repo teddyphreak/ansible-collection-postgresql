@@ -102,6 +102,7 @@
         - name: Slurp Patroni configuration
           ansible.builtin.slurp:
             path: "{{ _patroni_cluster_config_file }}"
+          become: true
           register: _patroni_config_query
 
         - name: Set Patroni configuration facts
@@ -120,21 +121,34 @@
             status_code: 200
             timeout: 3
 
-        - name: Verify cluster status
+        - name: Query cluster status
           ansible.builtin.uri:
-            url: "http://localhost:8008/status"
+            url: "http://localhost:8008/cluster"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
-            status_code: 20 0
+            status_code: 200
             timeout: 3
             return_content: true
           register: _cluster_status_query
 
-        - debug:
-            var: _cluster_status_query
+        - name: Verify cluster master
+          ansible.builtin.assert:
+            that: _masters | length == 1
+            success_msg: "Found cluster master {{ (_masters | first).name }}"
+            fail_msg: "Cluster does not have a master"
+          vars:
+            _members: "{{ _cluster_status_query.json.members }}"
+            _masters: "{{ _members | selectattr('role', 'equalto', 'leader') }}"
 
-        - fail:
+        - name: Verify cluster member status
+          ansible.builtin.assert:
+            that:
+              - _status.role in ['leader', 'replica', 'sync_standby']
+              - _status.state in ['running', 'streaming']
+          vars:
+            _members: "{{ _cluster_status_query.json.members }}"
+            _status: "{{ _members | selectattr('name', 'equalto', inventory_hostname) | first }}"
 
     - name: Verify consul cluster status
       block:
