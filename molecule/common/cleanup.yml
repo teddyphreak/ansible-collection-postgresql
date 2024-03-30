@@ -1,0 +1,22 @@
+---
+- name: Destroy libvirt storage
+  hosts: localhost
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Delete cached images
+      ansible.builtin.file:
+        dest: "{{ _path }}"
+        state: absent
+      vars:
+        _basename: "{{ item | urlsplit('path') | basename }}"
+        _path: "{{ _libvirt_path }}/{{ _basename }}"
+      loop_control:
+        label: "{{ _path }}"
+      loop: "{{ molecule_yml.platforms | map(attribute='image') | unique }}"
+
+    - name: Destroy libvirt pool
+      community.libvirt.virt_pool:
+        state: deleted
+        name: "{{ _libvirt_pool }}"

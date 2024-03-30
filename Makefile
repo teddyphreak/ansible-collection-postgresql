@@ -3,6 +3,7 @@
 MOLECULE_SCENARIO ?= install
 MOLECULE_DOCKER_IMAGE ?= ubuntu2204
 MOLECULE_DOCKER_COMMAND ?= /lib/systemd/systemd
+MOLECULE_KVM_IMAGE ?= https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
 GALAXY_API_KEY ?=
 GITHUB_REPOSITORY ?= $$(git config --get remote.origin.url | cut -d: -f 2 | cut -d. -f 1)
 GITHUB_ORG = $$(echo ${GITHUB_REPOSITORY} | cut -d/ -f 1)
@@ -43,6 +44,7 @@ build: requirements
 	@poetry run ansible-galaxy collection build --force
 
 dependency create prepare converge idempotence side-effect verify destroy cleanup login reset list:
+	MOLECULE_KVM_IMAGE=${MOLECULE_KVM_IMAGE} \
 	MOLECULE_DOCKER_COMMAND=${MOLECULE_DOCKER_COMMAND} \
 	MOLECULE_DOCKER_IMAGE=${MOLECULE_DOCKER_IMAGE} \
 	poetry run molecule $@ -s ${MOLECULE_SCENARIO}

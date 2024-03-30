@@ -1,0 +1,57 @@
+---
+- name: Destroy KVM guests
+  hosts: localhost
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Query active KVM guests
+      ansible.builtin.command: virsh list --name
+      register: guest_query
+
+    - name: Set KVM guest facts
+      ansible.builtin.set_fact:
+        _guests: "{{ molecule_yml.platforms | selectattr('name', 'in', guest_query.stdout_lines) }}"
+
+    - name: Stop KVM guests
+      ansible.builtin.command: virsh destroy {{ item }}
+      loop: "{{ _guests | map(attribute='name') }}"
+
+    - name: Query defined KVM guests
+      ansible.builtin.command: virsh list --name --all
+      register: guest_query
+
+    - name: Undefine KVM guests
+      ansible.builtin.command: virsh undefine {{ item }}
+      loop: "{{ _guests | map(attribute='name') }}"
+
+    - name: Delete guest disks
+      ansible.builtin.file:
+        dest: "{{ _path }}"
+        state: absent
+      vars:
+        _extensions: ['img', 'iso']
+        _path: "{{ _libvirt_path }}/{{ item.0 }}.{{ item.1 }}"
+      loop_control:
+        label: "{{ _path }}"
+      loop: "{{ molecule_yml.platforms | map(attribute='name') | product(_extensions) }}"
+
+    - name: Stop libvirt network
+      community.libvirt.virt_net:
+        command: destroy
+        name: "{{ _libvirt_network }}"
+      when: _libvirt_network != "default"
+      failed_when: false
+
+    - name: Delete libvirt network
+      community.libvirt.virt_net:
+        command: undefine
+        name: "{{ _libvirt_network }}"
+      when: _libvirt_network != "default"
+
+    - name: Delete host file entries
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: ".*{{ item }}.*"
+        state: absent
+      loop: "{{ molecule_yml.platforms | map(attribute='name') }}"

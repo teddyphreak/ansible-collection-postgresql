@@ -9,6 +9,8 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: molecule/databases/molecule.yml
     ignore_detectors: [filecontent]
+  - filename: molecule/update/molecule.yml
+    ignore_detectors: [filecontent]
   - filename: playbooks/vars/main.yml
     ignore_detectors: [filecontent]
   - filename: playbooks/facts.yml
@@ -19,3 +21,9 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: playbooks/templates/postgresql.conf.j2
     ignore_detectors: [filename]
+  - filename: playbooks/update.yml
+    ignore_detectors: [filecontent]
+  - filename: molecule/common/templates/*
+    ignore_detectors: [filecontent]
+  - filename: molecule/common/*
+    ignore_detectors: [filecontent]

@@ -20,16 +20,74 @@ _patroni_cluster_name: "{{ patroni_cluster_name }}"
 _patroni_cluster_api_username: "{{ patroni_cluster_api_username | default('patroni') }}"
 _patroni_cluster_api_password: "{{ patroni_cluster_api_password }}"
 _patroni_cluster_postgres_password: "{{ patroni_cluster_postgres_password }}"
+_patroni_cluster_maxlag_failover: "{{ patroni_custer_maxlag_failover | default('1048576') }}"
+_patroni_cluster_maxlag_sync: "{{ patroni_custer_maxlag_sync | default('-1') }}"
 _patroni_cluster_replication_username: "{{ patroni_cluster_replication_username | default('replicator') }}"
 _patroni_cluster_replication_password: "{{ patroni_cluster_replication_password }}"
-_patroni_cluster_hostgroup: "{{ patroni_cluster | default('patroni_cluster') }}"
+_patroni_cluster_rewind_username: "{{ patroni_cluster_rewind_username | default('rewind') }}"
+_patroni_cluster_rewind_password: "{{ patroni_cluster_rewind_password }}"
+_patroni_cluster_hostgroup: "{{ patroni_cluster_group | default('patroni_cluster') }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
 _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/patroni') }}"
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/config.yml"
+_patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60') }}"
+_patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"
+_patroni_cluster_hba_base:
+  - type: local
+    database: all
+    user: all
+    auth_method: peer
+  - type: host
+    database: all
+    user: all
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: all
+    user: all
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: all
+    user: all
+    address: "0.0.0.0/0"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_replication_username }}"
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_replication_username }}"
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_replication_username }}"
+    address: "0.0.0.0/0"
+    auth_method: md5
+  - type: host
+    database: rewind
+    user: "{{ _patroni_cluster_rewind_username }}"
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: rewind
+    user: "{{ _patroni_cluster_rewind_username }}"
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: rewind
+    user: "{{ _patroni_cluster_rewind_username }}"
+    address: "0.0.0.0/0"
+    auth_method: md5
 
-_patroni_barman_hostgroup: "{{ patroni_barman | default('patroni_barman') }}"
+_patroni_barman_hostgroup: "{{ patroni_barman_group | default('patroni_barman') }}"
 
-_patroni_consul_hostgroup: "{{ patroni_consul | default('patroni_consul') }}"
+_patroni_update_skip_hostgroup: "{{ patroni_update_skip_group | default('patroni_update_skip') }}"
+
+_patroni_consul_hostgroup: "{{ patroni_consul_group | default('patroni_consul') }}"
 _patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
 _patroni_consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
 _patroni_consul_backup_minutes: "{{ patroni_consul_backup_period | default('*/5') }}"
@@ -43,6 +101,7 @@ _patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local
 # Hardcoded values
 _patroni_groups_master: "_patroni_cluster_master"
 
+postgresql_hba_entries: "{{ _patroni_cluster_hba_base + _patroni_cluster_hba_extra }}"
 postgresql_release: "{{ _patroni_cluster_release }}"
 postgresql_initdb: false
 postgresql_service_state: stopped
@@ -50,3 +109,4 @@ postgresql_service_masked: true
 postgresql_service_enabled: false
 postgresql_pip_manage: false
 postgresql_locale: en_US.UTF-8
+postgresql_conf_socketdir_manage: false

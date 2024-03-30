@@ -1,5 +1,5 @@
 ---
-- name: Verify package installation
+- name: Verify Patroni cluster
   hosts: patroni_cluster
   any_errors_fatal: true
   vars_files:
@@ -91,3 +91,134 @@
     - name: Verify data checksum
       ansible.builtin.assert:
         that: postgresql_checksums.query_result[0].data_checksums == "on"
+
+    - name: Verify Patroni cluster status
+      block:
+        - name: Stat Patroni configuration file
+          ansible.builtin.stat:
+            path: "{{ _patroni_cluster_config_file }}"
+          register: _patroni_config_stat
+
+        - name: Slurp Patroni configuration
+          ansible.builtin.slurp:
+            path: "{{ _patroni_cluster_config_file }}"
+          become: true
+          register: _patroni_config_query
+
+        - name: Set Patroni configuration facts
+          ansible.builtin.set_fact:
+            _api_username: "{{ _config_data.restapi.authentication.username }}"
+            _api_password: "{{ _config_data.restapi.authentication.password }}"
+          vars:
+            _config_data: "{{ _patroni_config_query.content | ansible.builtin.b64decode | from_yaml }}"
+
+        - name: Verify member liveness
+          ansible.builtin.uri:
+            url: "http://localhost:8008/liveness"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+
+        - name: Query cluster status
+          ansible.builtin.uri:
+            url: "http://localhost:8008/cluster"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+            return_content: true
+          register: _cluster_status_query
+
+        - name: Verify cluster master
+          ansible.builtin.assert:
+            that: _masters | length == 1
+            success_msg: "Found cluster master {{ (_masters | first).name }}"
+            fail_msg: "Cluster does not have a master"
+          vars:
+            _members: "{{ _cluster_status_query.json.members }}"
+            _masters: "{{ _members | selectattr('role', 'equalto', 'leader') }}"
+
+        - name: Verify cluster member status
+          ansible.builtin.assert:
+            that:
+              - _status.role in ['leader', 'replica', 'sync_standby']
+              - _status.state in ['running', 'streaming']
+          vars:
+            _members: "{{ _cluster_status_query.json.members }}"
+            _status: "{{ _members | selectattr('name', 'equalto', inventory_hostname) | first }}"
+
+    - name: Verify Consul cluster status
+      block:
+        - name: Query Consul node cluster status
+          ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $3}'"
+          register: _consul_node_status
+          changed_when: false
+          no_log: true
+
+        - name: Check Consul node cluster status
+          ansible.builtin.assert:
+            that: _status == _expected
+            fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
+            success_msg: "Consul node type is '{{ _status }}'"
+          vars:
+            _status: "{{ _consul_node_status.stdout }}"
+            _expected: 'alive'
+
+    - name: Verify Consul cluster status
+      block:
+        - name: Query Consul node cluster status
+          ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $4}'"
+          register: _consul_node_type
+          changed_when: false
+
+        - name: Check Consul node cluster status
+          ansible.builtin.assert:
+            that: _status == _expected
+            fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
+            success_msg: "Consul node type is '{{ _status }}'"
+          vars:
+            _status: "{{ _consul_node_type.stdout }}"
+            _expected: 'client'
+
+
+- name: Verify Consul cluster
+  hosts: patroni_consul
+  any_errors_fatal: true
+  vars_files:
+    - ../../playbooks/vars/main.yml
+  tasks:
+    - name: Verify Consul cluster status
+      block:
+        - name: Query Consul node cluster status
+          ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $3}'"
+          register: _consul_node_status
+          changed_when: false
+          no_log: true
+
+        - name: Check Consul node cluster status
+          ansible.builtin.assert:
+            that: _status == _expected
+            fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
+            success_msg: "Consul node type is '{{ _status }}'"
+          vars:
+            _status: "{{ _consul_node_status.stdout }}"
+            _expected: 'alive'
+
+    - name: Verify Consul node type status
+      block:
+        - name: Query Consul node cluster status
+          ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $4}'"
+          register: _consul_node_type
+          changed_when: false
+
+        - name: Check Consul node cluster status
+          ansible.builtin.assert:
+            that: _status == _expected
+            fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
+            success_msg: "Consul node type is '{{ _status }}'"
+          vars:
+            _status: "{{ _consul_node_type.stdout }}"
+            _expected: 'server'
