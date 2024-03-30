@@ -150,15 +150,15 @@
             _members: "{{ _cluster_status_query.json.members }}"
             _status: "{{ _members | selectattr('name', 'equalto', inventory_hostname) | first }}"
 
-    - name: Verify consul cluster status
+    - name: Verify Consul cluster status
       block:
-        - name: Query consul node cluster status
+        - name: Query Consul node cluster status
           ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $3}'"
           register: _consul_node_status
           changed_when: false
           no_log: true
 
-        - name: Check consul node cluster status
+        - name: Check Consul node cluster status
           ansible.builtin.assert:
             that: _status == _expected
             fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
@@ -167,14 +167,14 @@
             _status: "{{ _consul_node_status.stdout }}"
             _expected: 'alive'
 
-    - name: Verify consul cluster status
+    - name: Verify Consul cluster status
       block:
-        - name: Query consul node cluster status
+        - name: Query Consul node cluster status
           ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $4}'"
           register: _consul_node_type
           changed_when: false
 
-        - name: Check consul node cluster status
+        - name: Check Consul node cluster status
           ansible.builtin.assert:
             that: _status == _expected
             fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
@@ -190,15 +190,15 @@
   vars_files:
     - ../../playbooks/vars/main.yml
   tasks:
-    - name: Verify consul cluster status
+    - name: Verify Consul cluster status
       block:
-        - name: Query consul node cluster status
+        - name: Query Consul node cluster status
           ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $3}'"
           register: _consul_node_status
           changed_when: false
           no_log: true
 
-        - name: Check consul node cluster status
+        - name: Check Consul node cluster status
           ansible.builtin.assert:
             that: _status == _expected
             fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
@@ -207,14 +207,14 @@
             _status: "{{ _consul_node_status.stdout }}"
             _expected: 'alive'
 
-    - name: Verify consul cluster status
+    - name: Verify Consul node type status
       block:
-        - name: Query consul node cluster status
+        - name: Query Consul node cluster status
           ansible.builtin.shell: "consul members listNode | grep {{ inventory_hostname }} | awk '{print $4}'"
           register: _consul_node_type
           changed_when: false
 
-        - name: Check consul node cluster status
+        - name: Check Consul node cluster status
           ansible.builtin.assert:
             that: _status == _expected
             fail_msg: "Expected consul node type '{{ _expected }}', got '{{ _status }}'"
