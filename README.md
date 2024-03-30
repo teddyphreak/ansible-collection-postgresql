@@ -8,11 +8,10 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 ## ToDo
 * Add HAProxy deployment playbook
 * Test dataplane integration
-* Refactor Consul playbook into independent collection
+* Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
 * Add PGCat deployment to install playbook
 * Move API authentication to SSL certs
-* Add support for Rocky Linux
 
 ## Collection hostgroups
 
