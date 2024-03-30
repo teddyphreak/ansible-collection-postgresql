@@ -4,7 +4,8 @@
 
 
 - name: Deploy Patroni cluster members
-  hosts: "{{ _patroni_cluster_hostgroup }}"
+  hosts: "_patroni_cluster_master:_patroni_cluster_slave"
+  any_errors_fatal: true
   become: true
   vars_files:
     - main.yml
@@ -69,6 +70,9 @@
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_file }}"
         force: false
+        owner: "{{ _postgresql_user }}"
+        group: "{{ _postgresql_group }}"
+        mode: 0640
       vars:
         _slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_size: "{{ _cluster_hosts | length }}"
@@ -85,80 +89,18 @@
         _config_synchronous_node_count: "{{ _cluster_size | int - 2 }}"
         _config_api_username: "{{ _patroni_cluster_api_username }}"
         _config_api_password: "{{ _patroni_cluster_api_password }}"
+        _config_postgres_password: "{{ _patroni_cluster_postgres_password }}"
         _config_replication_username: "{{ _patroni_cluster_replication_username }}"
         _config_replication_password: "{{ _patroni_cluster_replication_password }}"
-        _config_postgres_password: "{{ _patroni_cluster_postgres_password }}"
+        _config_rewind_username: "{{ _patroni_cluster_rewind_username }}"
+        _config_rewind_password: "{{ _patroni_cluster_rewind_password }}"
         _config_watchdog_mode: "{{ _patroni_watchdog_mode }}"
         _config_encoding: "{{ _patroni_config_encoding }}"
         _config_locale: "{{ _patroni_config_locale }}"
         _config_maxlag_failover: "{{ _patroni_cluster_maxlag_failover }}"
         _config_maxlag_sync: "{{ _patroni_cluster_maxlag_sync }}"
         _config_start_timeout: "{{ _patroni_cluster_start_timeout }}"
-
-    - name: Set cluster facts
-      ansible.builtin.set_fact:
-        _bootstrap_hostgroup: _patroni_cluster_bootstrap
-
-    - name: Bootstrap Patroni cluster
-      when: _bootstrap_hostgroup in groups
-      block:
-        - name: Start Patroni bootstrap service
-          ansible.builtin.service:
-            name: patroni
-            state: started
-            enabled: true
-
-        - name: Wait for cluster initialization
-          community.postgresql.postgresql_query:
-            query: "SELECT pg_is_in_recovery()"
-            db: postgres
-          become: true
-          become_user: "{{ _postgresql_user }}"
-          register: _slave_query
-          retries: 6
-          delay: 10
-          failed_when: _slave_query is failed or (_slave_query.query_result[0].pg_is_in_recovery | bool)
-
-    - name: Bootstrap Patroni cluster
-      when: inventory_hostname in groups[_patroni_groups_master]
-      block:
-        - name: Start Patroni bootstrap service
-          ansible.builtin.service:
-            name: "{{ _patroni_cluster_service_name }}"
-            state: started
-            enabled: true
-
-        - name: Start Patroni bootstrap service
-          ansible.builtin.service:
-            name: "{{ _patroni_cluster_service_name }}"
-            state: started
-            enabled: true
-
-        - name: Wait for cluster startup
-          community.postgresql.postgresql_info:
-            filter:
-              - version
-          become: true
-          become_user: "{{ _postgresql_user }}"
-          retries: 18
-          delay: 10
-          register: _postgresql_version
-          until: _postgresql_version is succeeded
-
-    - name: Start Patroni slave services
-      ansible.builtin.service:
-        name: "{{ _patroni_cluster_service_name }}"
-        state: started
-        enabled: true
-
-    - name: Manage PostgreSQL base config
-      ansible.builtin.template:
-        src: postgresql.conf.j2
-        dest: "{{ _postgresql_confdir }}/postgresql.base.conf"
-        owner: "{{ _postgresql_user }}"
-        group: "{{ _postgresql_group }}"
-        mode: 0644
-      notify: patroni_reload
+        _config_hba: "{{ _patroni_cluster_hba_base + _patroni_cluster_hba_extra }}"
 
     - name: Manage Patroni profile
       ansible.builtin.lineinfile:
@@ -168,6 +110,80 @@
         owner: root
         group: root
         mode: 0644
+
+    - name: Slurp Patroni configuration
+      ansible.builtin.slurp:
+        path: "{{ _patroni_cluster_config_file }}"
+      register: _patroni_config_query
+
+    - name: Set Patroni configuration facts
+      ansible.builtin.set_fact:
+        _api_username: "{{ _config_data.restapi.authentication.username }}"
+        _api_password: "{{ _config_data.restapi.authentication.password }}"
+      vars:
+        _config_data: "{{ _patroni_config_query.content | ansible.builtin.b64decode | from_yaml }}"
+
+    - name: Start Patroni master node
+      when: inventory_hostname in groups[_patroni_groups_master]
+      block:
+        - name: Start Patroni master service
+          ansible.builtin.service:
+            name: "{{ _patroni_cluster_service_name }}"
+            state: started
+            enabled: true
+
+        - name: Verify primary liveness
+          ansible.builtin.uri:
+            url: "http://localhost:8008/liveness"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+          retries: 30
+          delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+
+        - name: Verify primary status
+          ansible.builtin.uri:
+            url: "http://localhost:8008/primary"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+          retries: 30
+          delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+
+    - name: Start Patroni slave node
+      when: inventory_hostname not in groups[_patroni_groups_master]
+      block:
+        - name: Start Patroni slave services
+          ansible.builtin.service:
+            name: "{{ _patroni_cluster_service_name }}"
+            state: started
+            enabled: true
+
+        - name: Verify replica liveness
+          ansible.builtin.uri:
+            url: "http://localhost:8008/liveness"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+          retries: 30
+          delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+
+        - name: Verify replica status
+          ansible.builtin.uri:
+            url: "http://localhost:8008/replica"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+          retries: 30
+          delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
   handlers:
     - name: Reload Patroni

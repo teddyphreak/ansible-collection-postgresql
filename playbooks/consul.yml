@@ -39,7 +39,7 @@
       ansible.builtin.set_fact:
         consul_node_role: "{{ _role }}"
       vars:
-        _role: "{{ 'server' if _patroni_consul_hostgroup in groups else 'client' }}"
+        _role: "{{ 'server' if inventory_hostname in groups[_patroni_consul_hostgroup] else 'client' }}"
 
     - name: Deploy Consul cluster
       ansible.builtin.include_role:
@@ -47,7 +47,7 @@
       vars:
         consul_version: "{{ patroni_consul_version | default(hostvars['localhost']['consul_version']) }}"
         consul_bootstrap_expect: true
-        consul_bootstrap_expect_value: "{{ ansible_play_hosts_all | length }}"
+        consul_bootstrap_expect_value: "{{ groups[_patroni_consul_hostgroup] | length }}"
         consul_group_name: "{{ _patroni_consul_hostgroup }}"
         consul_datacenter: "{{ _patroni_consul_datacenter | regex_replace('[.]', '_') }}"
         consul_encrypt_enable: false

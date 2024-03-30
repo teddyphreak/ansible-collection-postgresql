@@ -20,8 +20,6 @@ postgresql:
   data_dir: {{ _config_datadir }}
   config_dir: {{ _config_configdir }}
   bin_dir: {{ _config_bindir }}
-  parameters:
-    unix_socket_directories: "{{ _config_socketdir }},/tmp"
   authentication:
     postgres:
       username: postgres
@@ -29,6 +27,9 @@ postgresql:
     replication:
       username: {{ _config_replication_username }}
       password: {{ _config_replication_password }}
+    rewind:
+      username: {{ _config_rewind_username }}
+      password: {{ _config_rewind_password }}
 bootstrap:
   dcs:
     loop_wait: 2
@@ -37,7 +38,7 @@ bootstrap:
     maximum_lag_on_failover: {{ _config_maxlag_failover | int }}
     maximum_lag_syncnode: {{ _config_maxlag_sync | int }}
     primary_start_timeout: {{ _config_start_timeout }}
-    synchronous_mode: off
+    synchronous_mode: on
     synchronous_mode_strict: off
     synchronous_node_count: {{ _config_synchronous_node_count }}
     synchronous_standby_names: "*"
@@ -56,13 +57,10 @@ bootstrap:
         wal_log_hints: "on"
         track_commit_timestamp: "off"
       pg_hba:
-        - local   all             all                                     peer
-        - host    all             all             127.0.0.1/32            md5
-        - host    all             all             ::1/128                 md5
-        - host    all             all             0.0.0.0/0               md5
-        - host    replication     {{ _config_replication_username }}             127.0.0.1/32            md5
-        - host    replication     {{ _config_replication_username }}             ::1/128                 md5
-        - host    replication     {{ _config_replication_username }}             0.0.0.0/0               md5
+        - local                all                  all                                       peer
+{% for e in _config_hba -%}
+{{ '%9s %-20s %-20s %-20s %-20s %s %s' | format('-', e.type, e.database, e.user, e.address | default(''), e.auth_method, e.auth_options|default("")) }}
+{% endfor %}
   method: initdb
   initdb:
     - data-checksums

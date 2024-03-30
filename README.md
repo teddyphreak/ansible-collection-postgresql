@@ -44,6 +44,7 @@ Cluster wide parameters
 | patroni_cluster_maxlag_failover      |                         1048576 | Patroni cluster max async replica lag bytes | false    |
 | patroni_cluster_maxlag_sync          |                              -1 | Patroni cluster max sync replica lag bytes  | false    |
 | patroni_cluster_start_timeout        |                              60 | Patroni cluster max member start timeout    | false    |
+| patroni_cluster_hba                  |                              [] | Patroni cluster hba objects                 | false    |
 | patroni_watchdog_enable              |                            true | Enable watchdog module                      | false    |
 | patroni_watchdog_mode                |                        required | Patroni watchdog mode                       | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration     | false    |

@@ -3,10 +3,11 @@
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
 
 
-- name: Update cluster slaves
+- name: Update Patroni cluster slaves
   hosts: "_patroni_cluster_slave:!{{ _patroni_update_skip_hostgroup }}"
   become: true
   serial: 1
+  any_errors_fatal: true
   vars_files:
     - main.yml
   vars:
@@ -70,9 +71,10 @@
       delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
 
-- name: Update cluster master
+- name: Update Patroni cluster master
   hosts: "_patroni_cluster_master:!{{ _patroni_update_skip_hostgroup }}"
   become: true
+  any_errors_fatal: true
   vars_files:
     - main.yml
   vars:
@@ -103,6 +105,7 @@
         password: "{{ _api_password }}"
         method: GET
         status_code: 200
+        timeout: 3
 
     - name: Verify primary status
       ansible.builtin.uri:
@@ -111,7 +114,7 @@
         password: "{{ _api_password }}"
         method: GET
         status_code: 200
-        return_content: true
+        timeout: 3
 
     - name: Switchover cluster role
       ansible.builtin.uri:
@@ -123,8 +126,21 @@
         body:
           leader: "{{ inventory_hostname }}"
         status_code: 200
-        return_content: true
-      register: _status_query
+        timeout: 3
+
+    - name: Verify replica status
+      ansible.builtin.uri:
+        url: "http://localhost:8008/replica?lag={{ _maxlag }}"
+        user: "{{ _api_username }}"
+        password: "{{ _api_password }}"
+        method: GET
+        status_code: 200
+        timeout: 3
+      vars:
+        _conf_lag: "[{{ _patroni_cluster_maxlag_failover | int }}, {{ _patroni_cluster_maxlag_sync | int }}]"
+        _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
+      retries: 30
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
     - name: Stop Patroni service
       ansible.builtin.service:
@@ -141,9 +157,20 @@
         password: "{{ _api_password }}"
         method: GET
         status_code: 200
-        return_content: true
+        timeout: 3
       vars:
         _conf_lag: "[{{ _patroni_cluster_maxlag_failover | int }}, {{ _patroni_cluster_maxlag_sync | int }}]"
         _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
       retries: 30
       delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+
+
+- name: Update Consul cluster members
+  hosts: "{{ _patroni_consul_hostgroup }}:!{{ _patroni_update_skip_hostgroup }}"
+  serial: 1
+  become: true
+  any_errors_fatal: true
+  vars_files:
+    - main.yml
+  tasks:
+  hosts: "{{ _patroni_consul_hostgroup }}:{{ _patroni_cluster_hostgroup }}"
