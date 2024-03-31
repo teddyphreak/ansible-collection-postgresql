@@ -6,6 +6,7 @@
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
 ## ToDo
+* Add Consul package holds
 * Add HAProxy deployment playbook
 * Test dataplane integration
 * Refactor Consul playbooks into independent collection
@@ -30,8 +31,8 @@ Cluster wide parameters
 
 | Parameter                            |                         Default | Description                                 | Required |
 |:-------------------------------------|--------------------------------:|:--------------------------------------------|:---------|
-| patroni_release_postgresql           |                          16.2-1 | Target PostgreSQL release                   | false    |
-| patroni_release_patroni              |                         3.2.2-2 | Target Patroni release                      | false    |
+| patroni_release_postgresql           |                            16.2 | Target PostgreSQL release                   | false    |
+| patroni_release_patroni              |                           3.2.2 | Target Patroni release                      | false    |
 | patroni_cluster_name                 |                             n/a | Patroni cluster name                        | true     |
 | patroni_cluster_databases            |                              [] | Patroni cluster databases                   | false    |
 | patroni_cluster_roles                |                              [] | Patroni cluster roles                       | false    |

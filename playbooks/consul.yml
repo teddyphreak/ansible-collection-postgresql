@@ -1,25 +1,4 @@
 ---
-- name: Query Consul releases
-  hosts: "{{ patroni_localgroup | default('localhost') }}"
-  run_once: true
-  vars_files:
-    - main.yml
-  tasks:
-    - name: Query Consul releases
-      community.general.github_release:
-        user: hashicorp
-        repo: consul
-        action: latest_release
-        token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') | default(omit) }}"
-      register: _consul_release_query
-
-    - name: Set target Consul release
-      ansible.builtin.set_fact:
-        consul_version: "{{ _version | regex_replace('^v', '') }}"
-      vars:
-        _version: "{{ patroni_consul_version | default(_consul_release_query.tag) }}"
-
-
 - name: Deploy Consul
   hosts: "{{ _patroni_consul_hostgroup }}:{{ _patroni_cluster_hostgroup }}"
   become: true
@@ -45,12 +24,14 @@
       ansible.builtin.include_role:
         name: nephelaiio.patroni.consul
       vars:
-        consul_version: "{{ patroni_consul_version | default(hostvars['localhost']['consul_version']) }}"
         consul_bootstrap_expect: true
         consul_bootstrap_expect_value: "{{ groups[_patroni_consul_hostgroup] | length }}"
         consul_group_name: "{{ _patroni_consul_hostgroup }}"
         consul_datacenter: "{{ _patroni_consul_datacenter | regex_replace('[.]', '_') }}"
         consul_encrypt_enable: false
+        consul_os_repo_prerequisites: "{{ (ansible_os_family == 'RedHat') | ternary('yum-utils', 'false') }}"
+        consul_bin_path: "{{ (consul_install_from_repo | default(False) | bool) | ternary('/usr/bin', '/usr/local/bin') }}"
+        consul_install_from_repo: true
         consul_install_dependencies: false
         consul_os_packages:
           - unzip

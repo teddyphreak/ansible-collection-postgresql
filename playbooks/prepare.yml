@@ -17,9 +17,15 @@
       loop: "{{ ansible_play_hosts }}"
       when: _patroni_config_hostnames
 
-    - name: Install cron
+    - name: Install cron for Debian derivatives
       ansible.builtin.package:
         name: cron
+      when: ansible_os_family == "Debian"
+
+    - name: Install cron for RedHat derivatives
+      ansible.builtin.package:
+        name: cronie
+      when: ansible_os_family == "RedHat"
 
 
 - name: Prepare Patroni cluster members

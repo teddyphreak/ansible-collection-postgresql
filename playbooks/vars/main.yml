@@ -1,7 +1,7 @@
 ---
 # Defaults
-patroni_defaults_release_postgreql: '16.2-1'
-patroni_defaults_release_patroni: '3.2.2-2'
+patroni_defaults_release_postgreql: '16.2'
+patroni_defaults_release_patroni: '3.2.2'
 
 # Overridable values
 _patroni_release_postgresql: "{{ patroni_release_postgresql | default(patroni_defaults_release_postgreql) }}"
@@ -29,7 +29,7 @@ _patroni_cluster_rewind_password: "{{ patroni_cluster_rewind_password }}"
 _patroni_cluster_hostgroup: "{{ patroni_cluster_group | default('patroni_cluster') }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
 _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/patroni') }}"
-_patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/config.yml"
+_patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/{{ (ansible_os_family == 'Debian') | ternary('config', 'patroni') }}.yml"
 _patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60') }}"
 _patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"
 _patroni_cluster_hba_base:
