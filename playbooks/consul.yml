@@ -24,7 +24,7 @@
       block:
         - name: Release Consul apt hold
           ansible.builtin.dpkg_selections:
-            name: "{{ _package_target }}"
+            name: consul
             selection: install
           when: ansible_os_family == "Debian"
           changed_when: false
@@ -59,7 +59,7 @@
       block:
         - name: Hold Consul apt package
           ansible.builtin.dpkg_selections:
-            name: "{{ _package_target }}"
+            name: consul
             selection: hold
           when: ansible_os_family == "Debian"
           changed_when: false
