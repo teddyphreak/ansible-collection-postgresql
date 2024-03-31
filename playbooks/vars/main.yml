@@ -5,6 +5,12 @@ patroni_defaults_release_patroni: '3.2.2'
 patroni_defaults_release_consul: '1.18.1-1'
 
 # Overridable values
+_patroni_cluster_hostgroup: "{{ patroni_cluster_group | default('patroni_cluster') }}"
+_patroni_barman_hostgroup: "{{ patroni_barman_group | default('patroni_barman') }}"
+_patroni_update_skip_hostgroup: "{{ patroni_update_skip_group | default('patroni_update_skip') }}"
+_patroni_consul_hostgroup: "{{ patroni_consul_group | default('patroni_consul') }}"
+_patroni_haproxy_hostgroup: "{{ patroni_haproxy_group | default('patroni_haproxy') }}"
+
 _patroni_release_postgresql: "{{ patroni_release_postgresql | default(patroni_defaults_release_postgreql) }}"
 _patroni_release_patroni: "{{ patroni_release_postgresql | default(patroni_defaults_release_patroni) }}"
 _patroni_release_consul: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
@@ -28,7 +34,6 @@ _patroni_cluster_replication_username: "{{ patroni_cluster_replication_username 
 _patroni_cluster_replication_password: "{{ patroni_cluster_replication_password }}"
 _patroni_cluster_rewind_username: "{{ patroni_cluster_rewind_username | default('rewind') }}"
 _patroni_cluster_rewind_password: "{{ patroni_cluster_rewind_password }}"
-_patroni_cluster_hostgroup: "{{ patroni_cluster_group | default('patroni_cluster') }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
 _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/patroni') }}"
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/{{ (ansible_os_family == 'Debian') | ternary('config', 'patroni') }}.yml"
@@ -85,11 +90,6 @@ _patroni_cluster_hba_base:
     address: "0.0.0.0/0"
     auth_method: md5
 
-_patroni_barman_hostgroup: "{{ patroni_barman_group | default('patroni_barman') }}"
-
-_patroni_update_skip_hostgroup: "{{ patroni_update_skip_group | default('patroni_update_skip') }}"
-
-_patroni_consul_hostgroup: "{{ patroni_consul_group | default('patroni_consul') }}"
 _patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
 _patroni_consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
 _patroni_consul_backup_minutes: "{{ patroni_consul_backup_period | default('*/5') }}"

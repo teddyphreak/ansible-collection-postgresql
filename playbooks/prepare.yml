@@ -1,6 +1,10 @@
 ---
 - name: Prepare Patroni stack members
-  hosts: "{{ _patroni_cluster_hostgroup }}:{{ _patroni_barman_hostgroup }}:{{ _patroni_consul_hostgroup }}"
+  hosts:
+    - "{{ _patroni_cluster_hostgroup }}"
+    - "{{ _patroni_barman_hostgroup }}"
+    - "{{ _patroni_consul_hostgroup }}"
+    - "{{ _patroni_haproxy_hostgroup }}"
   become: true
   vars_files:
     - main.yml
@@ -22,11 +26,19 @@
         name:
           - yum-utils
           - python3-dnf-plugin-versionlock
+          - acl
       when: ansible_os_family == 'RedHat'
+
+    - name: Install apt prerequisites
+      ansible.builtin.package:
+        name: acl
+      when: ansible_os_family == 'Debian'
 
 
 - name: Prepare Patroni Consul hosts
-  hosts: "{{ _patroni_consul_hostgroup }}"
+  hosts:
+    - "{{ _patroni_consul_hostgroup }}"
+    - "{{ _patroni_cluster_hostgroup }}"
   become: true
   vars_files:
     - main.yml
