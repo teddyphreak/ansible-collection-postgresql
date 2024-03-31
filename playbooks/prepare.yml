@@ -17,6 +17,18 @@
       loop: "{{ ansible_play_hosts }}"
       when: _patroni_config_hostnames
 
+    - name: Install yum prerequisites
+      ansible.builtin.package:
+        name: yum-utils
+      when: ansible_os_family == 'RedHat'
+
+
+- name: Prepare Patroni Consul hosts
+  hosts: "{{ _patroni_consul_hostgroup }}"
+  become: true
+  vars_files:
+    - main.yml
+  tasks:
     - name: Install cron for Debian derivatives
       ansible.builtin.package:
         name: cron
@@ -28,7 +40,7 @@
       when: ansible_os_family == "RedHat"
 
 
-- name: Prepare Patroni cluster members
+- name: Prepare Patroni PostgreSQL hosts
   hosts: "{{ _patroni_cluster_hostgroup }}"
   become: true
   vars_files:

@@ -47,7 +47,7 @@
         consul_group_name: "{{ _patroni_consul_hostgroup }}"
         consul_datacenter: "{{ _patroni_consul_datacenter | regex_replace('[.]', '_') }}"
         consul_encrypt_enable: false
-        consul_os_repo_prerequisites: "{{ (ansible_os_family == 'RedHat') | ternary('yum-utils', 'false') }}"
+        consul_os_repo_prerequisites: []
         consul_bin_path: "{{ (consul_install_from_repo | default(False) | bool) | ternary('/usr/bin', '/usr/local/bin') }}"
         consul_install_from_repo: true
         consul_install_dependencies: false
