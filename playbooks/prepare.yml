@@ -19,7 +19,9 @@
 
     - name: Install yum prerequisites
       ansible.builtin.package:
-        name: python3-dnf-plugin-versionlock
+        name:
+          - yum-utils
+          - python3-dnf-plugin-versionlock
       when: ansible_os_family == 'RedHat'
 
 
