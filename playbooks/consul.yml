@@ -28,6 +28,7 @@
             selection: install
           when: ansible_os_family == "Debian"
           changed_when: false
+          ignore_errors: true
 
         - name: Release Consul yum lock
           community.general.yum_versionlock:
