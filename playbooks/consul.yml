@@ -20,10 +20,27 @@
       vars:
         _role: "{{ 'server' if inventory_hostname in groups[_patroni_consul_hostgroup] else 'client' }}"
 
+    - name: Release Consul package holds
+      block:
+        - name: Release Consul apt hold
+          ansible.builtin.dpkg_selections:
+            name: "{{ _package_target }}"
+            selection: install
+          when: ansible_os_family == "Debian"
+          changed_when: false
+
+        - name: Release Consul yum lock
+          community.general.yum_versionlock:
+            name: consul
+            state: absent
+          when: ansible_os_family == "RedHat"
+          changed_when: false
+
     - name: Deploy Consul cluster
       ansible.builtin.include_role:
         name: nephelaiio.patroni.consul
       vars:
+        consul_version: "{{ _patroni_release_consul }}"
         consul_bootstrap_expect: true
         consul_bootstrap_expect_value: "{{ groups[_patroni_consul_hostgroup] | length }}"
         consul_group_name: "{{ _patroni_consul_hostgroup }}"
@@ -36,6 +53,23 @@
         consul_os_packages:
           - unzip
           - acl
+
+    - name: Release Consul package holds
+      when: _patroni_release_consul is defined
+      block:
+        - name: Hold Consul apt package
+          ansible.builtin.dpkg_selections:
+            name: "{{ _package_target }}"
+            selection: hold
+          when: ansible_os_family == "Debian"
+          changed_when: false
+
+        - name: Lock Consul yum package
+          community.general.yum_versionlock:
+            name: consul
+            state: present
+          when: ansible_os_family == "RedHat"
+          changed_when: false
 
     - name: Create Consul backup path
       ansible.builtin.file:

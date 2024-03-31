@@ -224,3 +224,15 @@
           vars:
             _status: "{{ _consul_node_type.stdout }}"
             _expected: 'server'
+
+    - name: Verify apt Consul package lock
+      ansible.builtin.command:
+        cmd: "apt-mark showhold | grep consul"
+      when: ansible_os_family == "Debian"
+      changed_when: false
+
+    - name: Verify yum package lock
+      ansible.builtin.command:
+        cmd: "grep consul /etc/yum/pluginconf.d/versionlock.list"
+      when: ansible_os_family == "RedHat"
+      changed_when: false
