@@ -8,11 +8,11 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 ## ToDo
 * Add HAProxy deployment playbook
 * Test dataplane integration
-* Refactor Consul playbook into independent collection
+* Overwrite Patroni configuration
+* Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
 * Add PGCat deployment to install playbook
 * Move API authentication to SSL certs
-* Add support for Rocky Linux
 
 ## Collection hostgroups
 
@@ -31,8 +31,9 @@ Cluster wide parameters
 
 | Parameter                            |                         Default | Description                                 | Required |
 |:-------------------------------------|--------------------------------:|:--------------------------------------------|:---------|
-| patroni_release_postgresql           |                          16.2-1 | Target PostgreSQL release                   | false    |
-| patroni_release_patroni              |                         3.2.2-2 | Target Patroni release                      | false    |
+| patroni_release_postgresql           |                            16.2 | Target PostgreSQL release                   | false    |
+| patroni_release_patroni              |                           3.2.2 | Target Patroni release                      | false    |
+| patroni_release_consul               |                        1.18.1-1 | Target Consul release                       | false    |
 | patroni_cluster_name                 |                             n/a | Patroni cluster name                        | true     |
 | patroni_cluster_databases            |                              [] | Patroni cluster databases                   | false    |
 | patroni_cluster_roles                |                              [] | Patroni cluster roles                       | false    |
@@ -48,7 +49,6 @@ Cluster wide parameters
 | patroni_watchdog_enable              |                            true | Enable watchdog module                      | false    |
 | patroni_watchdog_mode                |                        required | Patroni watchdog mode                       | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration     | false    |
-| patroni_consul_version               |                        'latest' | Consul version                              | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                      | false    |
 | patroni_consul_backup_path           |               '/backups/consul' | Consul snapshot backup path                 | false    |
 | patroni_consul_backup_bin            | '/usr/local/bin/consul-snapshot | Consul snapshot backup script location      | false    |

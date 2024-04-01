@@ -4,6 +4,8 @@
   any_errors_fatal: true
   vars_files:
     - ../../playbooks/vars/main.yml
+  vars:
+    _service: "{{ _patroni_cluster_service_name }}{{ (ansible_os_family == 'RedHat') | ternary('.service', '') }}"
   tasks:
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
@@ -25,11 +27,11 @@
 
     - name: Debug service status
       ansible.builtin.debug:
-        msg: "{{ services[_patroni_cluster_service_name].state }}"
+        msg: "{{ services[_service].state }}"
 
-    - name: Check db services
+    - name: Verify db services
       ansible.builtin.assert:
-        that: services[_patroni_cluster_service_name].state == 'running'
+        that: services[_service].state == 'running'
 
     - name: Gather postgresql info
       community.postgresql.postgresql_info:
@@ -222,3 +224,15 @@
           vars:
             _status: "{{ _consul_node_type.stdout }}"
             _expected: 'server'
+
+    - name: Verify apt Consul package lock
+      ansible.builtin.command:
+        cmd: "apt-mark showhold | grep consul"
+      when: ansible_os_family == "Debian"
+      changed_when: false
+
+    - name: Verify yum package lock
+      ansible.builtin.command:
+        cmd: "grep consul /etc/yum/pluginconf.d/versionlock.list"
+      when: ansible_os_family == "RedHat"
+      changed_when: false
