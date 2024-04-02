@@ -85,6 +85,45 @@ platforms:
       - /opt
     groups:
       - patroni_consul
+  - name: patroni-install-haproxy-01
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - patroni_haproxy
+  - name: patroni-install-haproxy-02
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - patroni_haproxy
+  - name: patroni-install-haproxy-03
+    image: "geerlingguy/docker-${MOLECULE_DOCKER_IMAGE:-ubuntu2204}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp
+      - /opt
+    groups:
+      - patroni_haproxy
 provisioner:
   name: ansible
   config_options:
@@ -94,7 +133,6 @@ provisioner:
   playbooks:
     prepare: ../common/prepare.yml
     converge: ../common/install.yml
-    side_effect: ../common/install.yml
     verify: ../common/verify.yml
   inventory:
     hosts:
@@ -110,6 +148,18 @@ provisioner:
           patroni_cluster_rewind_password: molecule
           patroni_watchdog_enable: false
           patroni_watchdog_mode: off
+          patroni_molecule_username: install
+          patroni_molecule_password: molecule
+          patroni_molecule_database: test
+          patroni_cluster_roles:
+            - name: "{{ patroni_molecule_username }}"
+              password: "{{ patroni_molecule_username }}"
+          patroni_cluster_databases:
+            - name: "{{ patroni_molecule_database }}"
+              encoding: "UNICODE"
+              roles:
+                - name: "{{ patroni_molecule_username }}"
+                  privs: ALL
 verifier:
   name: ansible
 scenario:

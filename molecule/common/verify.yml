@@ -236,3 +236,36 @@
         cmd: "grep consul /etc/yum/pluginconf.d/versionlock.list"
       when: ansible_os_family == "RedHat"
       changed_when: false
+
+
+- name: Verify HaProxy deployment
+  hosts: patroni_cluster
+  any_errors_fatal: true
+  vars_files:
+    - ../../playbooks/vars/main.yml
+  tasks:
+    - name: Test master connectivity
+      community.postgresql.postgresql_info:
+        filter:
+          - "databases"
+          - "roles"
+        login_host: 127.0.0.1
+        login_user: "{{ patroni_molecule_username }}"
+        login_password: "{{ patroni_molecule_password }}"
+        port: 5432
+      when:
+        - patroni_molecule_username is defined
+        - patroni_molecule_password is defined
+
+    - name: Test slave connectivity
+      community.postgresql.postgresql_info:
+        filter:
+          - "databases"
+          - "roles"
+        login_host: 127.0.0.1
+        login_user: "{{ patroni_molecule_username }}"
+        login_password: "{{ patroni_molecule_password }}"
+        port: 5433
+      when:
+        - patroni_molecule_username is defined
+        - patroni_molecule_password is defined

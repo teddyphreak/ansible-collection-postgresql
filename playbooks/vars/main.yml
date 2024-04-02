@@ -39,6 +39,8 @@ _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/pa
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/{{ (ansible_os_family == 'Debian') | ternary('config', 'patroni') }}.yml"
 _patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60') }}"
 _patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"
+_patroni_cluster_roles: "{{ patroni_cluster_roles | default([]) }}"
+_patroni_cluster_databases: "{{ patroni_cluster_databases | default([]) }}"
 _patroni_cluster_hba_base:
   - type: local
     database: all
@@ -54,6 +56,11 @@ _patroni_cluster_hba_base:
     user: all
     address: "::1/128"
     auth_method: md5
+  - type: host
+    database: all
+    user: postgres
+    address: "0.0.0.0/0"
+    auth_method: reject
   - type: host
     database: all
     user: all
@@ -99,6 +106,10 @@ _patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/
 _patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
 _patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"
 
+_patroni_haproxy_config_file: "/etc/haproxy/haproxy.cfg"
+_patroni_haproxy_user: "haproxy"
+_patroni_haproxy_group: "haproxy"
+_patroni_haproxy_maxconn: "{{ patroni_haproxy_maxconn | default(1000) }}"
 
 # Hardcoded values
 _patroni_groups_master: "_patroni_cluster_master"
@@ -112,3 +123,5 @@ postgresql_service_enabled: false
 postgresql_pip_manage: false
 postgresql_locale: en_US.UTF-8
 postgresql_conf_socketdir_manage: false
+postgresql_roles: "{{ _patroni_cluster_roles }}"
+postgresql_databases: "{{ _patroni_cluster_databases }}"

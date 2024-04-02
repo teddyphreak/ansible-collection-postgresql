@@ -1,0 +1,54 @@
+---
+- name: Gather cluster host facts
+  hosts: "{{ _patroni_cluster_hostgroup }}"
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Gather host facts
+      ansible.builtin.setup:
+
+
+- name: Deploy HAProxy
+  hosts: "{{ _patroni_haproxy_hostgroup }}"
+  become: true
+  any_errors_fatal: true
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Install HAProxy package
+      ansible.builtin.package:
+        name: haproxy
+
+    - name: Configure HAProxy
+      ansible.builtin.template:
+        src: "haproxy.conf.j2"
+        dest: "{{ _patroni_haproxy_config_file }}"
+        owner: "{{ _patroni_haproxy_user }}"
+        group: "{{ _patroni_haproxy_group }}"
+        mode: 0640
+      vars:
+        _restapi_auth: "{{ _patroni_cluster_api_username }}:{{ _patroni_cluster_api_password }}"
+        _addrattrs: "{{ 'ansible_fqdn' if (patroni_config_hostnames | bool) else ['ansible_default_ipv4', 'address'] }}"
+        _hostnames: "{{ groups[_patroni_cluster_hostgroup] }}"
+        _hostaddrs: "{{ _hostnames | map('extract', hostvars, _addrattrs) }}"
+        _hostattrs: "{{ _hostnames | zip(_hostaddrs) }}"
+        _conf_addr: "127.0.0.1"
+        _conf_user: "haproxy"
+        _conf_group: "haproxy"
+        _conf_maxconn: "{{ _patroni_haproxy_maxconn }}"
+        _conf_check_auth: "{{ _restapi_auth | b64encode }}"
+        _conf_pgnodes: "{{ _hostattrs | map('zip', ['name', 'address']) | map('map', 'reverse') | map('community.general.dict') }}"
+      notify: haproxy_reload
+
+    - name: Start HAProxy service
+      ansible.builtin.service:
+        name: haproxy
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Reload HAProxy service
+      ansible.builtin.service:
+        name: haproxy
+        state: reloaded
+      listen: haproxy_reload

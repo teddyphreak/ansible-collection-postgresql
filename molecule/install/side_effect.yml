@@ -1,0 +1,7 @@
+---
+- name: Import install playbook
+  import_playbook: nephelaiio.patroni.install
+
+
+- name: Import database playbook
+  import_playbook: nephelaiio.patroni.databases

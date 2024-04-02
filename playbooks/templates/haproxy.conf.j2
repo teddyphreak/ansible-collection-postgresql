@@ -1,0 +1,41 @@
+global
+    maxconn {{ _conf_maxconn }}
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+    stats timeout 30s
+    user {{ _conf_user }}
+    group {{ _conf_group }}
+    daemon
+
+defaults
+    log global
+    mode tcp
+    retries 2
+    timeout client 30m
+    timeout connect 4s
+    timeout server 30m
+    timeout check 5s
+
+listen stats
+    mode http
+    bind *:8008
+    stats enable
+    stats uri /
+
+listen production
+    bind {{ _conf_addr }}:5432
+    option httpchk OPTIONS /master HTTP/1.0\r\nAuthorization:\ Basic\ {{ _conf_check_auth }}
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+{% for _pgnode in _conf_pgnodes %}
+    server {{ _pgnode.name }} {{ _pgnode.address }}:5432 maxconn {{ _conf_maxconn }} check port 8008
+{% endfor %}
+
+listen standby
+    bind {{ _conf_addr }}:5433
+    option httpchk OPTIONS /replica HTTP/1.0\r\nAuthorization:\ Basic\ {{ _conf_check_auth }}
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+{% for _pgnode in _conf_pgnodes %}
+    server {{ _pgnode.name }} {{ _pgnode.address }}:5432 maxconn {{ _conf_maxconn }} check port 8008
+{% endfor %}
