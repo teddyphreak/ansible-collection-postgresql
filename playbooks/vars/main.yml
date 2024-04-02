@@ -123,5 +123,3 @@ postgresql_service_enabled: false
 postgresql_pip_manage: false
 postgresql_locale: en_US.UTF-8
 postgresql_conf_socketdir_manage: false
-postgresql_roles: "{{ _patroni_cluster_roles }}"
-postgresql_databases: "{{ _patroni_cluster_databases }}"

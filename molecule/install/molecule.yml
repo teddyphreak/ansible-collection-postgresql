@@ -153,7 +153,7 @@ provisioner:
           patroni_molecule_database: test
           patroni_cluster_roles:
             - name: "{{ patroni_molecule_username }}"
-              password: "{{ patroni_molecule_username }}"
+              password: "{{ patroni_molecule_password }}"
           patroni_cluster_databases:
             - name: "{{ patroni_molecule_database }}"
               encoding: "UNICODE"

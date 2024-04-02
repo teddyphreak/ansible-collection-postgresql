@@ -6,7 +6,7 @@
 
 
 - name: Manage Patroni databases and roles
-  hosts: "{{ _patroni_cluster_hostgroup }}"
+  hosts: _patroni_cluster_master
   become: true
   vars_files:
     - main.yml
@@ -17,6 +17,5 @@
       vars:
         postgresql_database_manage: true
         postgresql_role_manage: true
-        postgresql_databases: "{{ _patroni_cluster_databases | default([]) }}"
-        postgresql_roles: "{{ _patroni_cluster_databases | default([]) }}"
-      when: inventory_hostname in groups[_patroni_groups_master]
+        postgresql_databases: "{{ _patroni_cluster_databases }}"
+        postgresql_roles: "{{ _patroni_cluster_roles }}"
