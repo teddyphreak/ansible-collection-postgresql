@@ -3,7 +3,6 @@
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
 
 
-
 - name: Update Patroni HAProxy hosts
   hosts: "{{ _patroni_haproxy_hostgroup }}:!{{ _patroni_update_skip_hostgroup }}"
   serial: 1

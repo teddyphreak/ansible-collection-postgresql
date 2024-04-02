@@ -8,6 +8,7 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 ## ToDo
 * Test dataplane integration
 * Add Barman integration
+* Add slave cluster bootstrap option
 * Overwrite Patroni configuration
 * Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
@@ -59,7 +60,35 @@ Cluster wide parameters
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component           | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component           | false    |
 | patroni_consul_backup_days           |                            '\*' | Consul snapshot cronjob component           | false    |
+| patroni_haproxy_nodes                |                 [<node_object>] | Consul haproxy max connections settings     | false    |
 | patroni_haproxy_maxconn              |                            1000 | Consul haproxy max connections settings     | false    |
+
+where <node_object> follows the following json schema
+
+``` json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ]
+    }
+  ]
+}
+
+```
 
 ## Collection playbooks
 
