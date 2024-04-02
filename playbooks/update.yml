@@ -94,6 +94,8 @@
   vars:
     update_reboot: false
     update_cache_valid_time: 1
+  roles:
+    - nephelaiio.patroni.update
   tasks:
     - name: Stat Patroni configuration file
       ansible.builtin.stat:
@@ -186,6 +188,11 @@
   any_errors_fatal: true
   vars_files:
     - main.yml
+  vars:
+    update_reboot: false
+    update_cache_valid_time: 1
+  roles:
+    - nephelaiio.patroni.update
   tasks:
     - name: Stop Consul service
       ansible.builtin.service:
@@ -227,3 +234,16 @@
           vars:
             _status: "{{ _consul_node_type.stdout }}"
             _expected: 'server'
+
+
+- name: Update HAPRoxy nodes
+  hosts: "{{ _patroni_haproxy_hostgroup }}:!{{ _patroni_update_skip_hostgroup }}"
+  serial: 1
+  become: true
+  any_errors_fatal: true
+  vars_files:
+    - main.yml
+  vars:
+    update_reboot: true
+  roles:
+    - nephelaiio.patroni.update
