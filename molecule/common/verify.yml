@@ -276,7 +276,7 @@
             login_password: "{{ patroni_molecule_password }}"
             port: 5432
 
-        - name: Query master proxy endpoint
+        - name: Verify master role
           community.postgresql.postgresql_query:
             query: "SELECT pg_is_in_recovery()"
             db: postgres
@@ -284,13 +284,12 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: 5432
+          retries: 10
+          delay: 30
           register: _slave_query
-
-        - name: Verify master role
-          ansible.builtin.assert:
-            that:
-              - _slave_query is succeeded
-              - not _slave_query.query_result[0].pg_is_in_recovery
+          until:
+            - _slave_query is succeeded
+            - not _slave_query.query_result[0].pg_is_in_recovery
 
         - name: Test slave connectivity
           community.postgresql.postgresql_info:
@@ -310,10 +309,9 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: 5433
+          retries: 10
+          delay: 30
           register: _slave_query
-
-        - name: Verify master role
-          ansible.builtin.assert:
-            that:
-              - _slave_query is succeeded
-              - _slave_query.query_result[0].pg_is_in_recovery
+          until:
+            - _slave_query is succeeded
+            - _slave_query.query_result[0].pg_is_in_recovery
