@@ -9,7 +9,7 @@
 
 
 - name: Deploy HAProxy
-  hosts: "{{ _patroni_haproxy_hostgroup }}"
+  hosts: "{{ _patroni_haproxy_hostgroup }}:{{ _patroni_barman_hostgroup }}"
   become: true
   any_errors_fatal: true
   vars_files:

@@ -61,6 +61,12 @@ platforms:
     memory: 2
     groups:
       - patroni_haproxy
+  - name: patroni-update-barman-01
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 1
+    memory: 4
+    groups:
+      - patroni_barman
 provisioner:
   name: ansible
   config_options:
