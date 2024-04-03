@@ -8,6 +8,7 @@ on:
     paths:
       - 'playbooks/prepare.yml'
       - 'molecule/update/*.yml'
+      - 'playbooks/update.yml'
       - '.github/workflows/libvirt.yml'
 
 jobs:
