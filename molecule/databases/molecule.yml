@@ -164,7 +164,6 @@ provisioner:
               role_attr_flags: "NOLOGIN"
           patroni_cluster_databases:
             - name: database
-              encoding: "UNICODE"
               roles:
                 - name: admins
                   privs: ALL

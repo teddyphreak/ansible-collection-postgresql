@@ -259,11 +259,14 @@
         virtualenv: "{{ _virtualenv_tmpdir.path }}/venv"
       changed_when: false
 
-    - name: Test HAProxy services
+    - name: Verify HAProxy services
+      when:
+        - patroni_molecule_username is defined
+        - patroni_molecule_password is defined
       vars:
         ansible_python_interpreter: "{{ _virtualenv_tmpdir.path }}/venv/bin/python"
       block:
-        - name: Test master connectivity
+        - name: Verify master connectivity
           community.postgresql.postgresql_info:
             db: "{{ patroni_molecule_database }}"
             filter:
@@ -272,9 +275,22 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: 5432
-          when:
-            - patroni_molecule_username is defined
-            - patroni_molecule_password is defined
+
+        - name: Query master proxy endpoint
+          community.postgresql.postgresql_query:
+            query: "SELECT pg_is_in_recovery()"
+            db: postgres
+            login_host: 127.0.0.1
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
+            port: 5432
+          register: _slave_query
+
+        - name: Verify master role
+          ansible.builtin.assert:
+            that:
+              - _slave_query is succeeded
+              - not _slave_query.query_result[0].pg_is_in_recovery
 
         - name: Test slave connectivity
           community.postgresql.postgresql_info:
@@ -285,6 +301,19 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: 5433
-          when:
-            - patroni_molecule_username is defined
-            - patroni_molecule_password is defined
+
+        - name: Query slave proxy endpoint
+          community.postgresql.postgresql_query:
+            query: "SELECT pg_is_in_recovery()"
+            db: postgres
+            login_host: 127.0.0.1
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
+            port: 5433
+          register: _slave_query
+
+        - name: Verify master role
+          ansible.builtin.assert:
+            that:
+              - _slave_query is succeeded
+              - _slave_query.query_result[0].pg_is_in_recovery

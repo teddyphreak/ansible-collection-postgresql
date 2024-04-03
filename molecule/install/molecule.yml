@@ -156,7 +156,6 @@ provisioner:
               password: "{{ patroni_molecule_password }}"
           patroni_cluster_databases:
             - name: "{{ patroni_molecule_database }}"
-              encoding: "UNICODE"
               roles:
                 - name: "{{ patroni_molecule_username }}"
                   privs: ALL
