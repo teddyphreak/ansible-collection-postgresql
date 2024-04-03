@@ -22,7 +22,7 @@ listen stats
     stats enable
     stats uri /
 
-listen production
+listen master
     bind {{ _conf_addr }}:5432
     http-check send meth OPTIONS uri /master ver HTTP/1.0 hdr Authorization "Basic {{ _conf_check_auth }}"
     http-check expect status 200
