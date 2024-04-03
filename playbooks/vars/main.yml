@@ -118,11 +118,10 @@ _patroni_haproxy_addrattrs: "{{ _patroni_config_hostnames | ternary('ansible_fqd
 _patroni_haproxy_hostaddrs: "{{ _patroni_cluster_nodes |
   map('extract', hostvars, _patroni_haproxy_addrattrs) }}"
 _patroni_haproxy_hostattrs: "{{ _patroni_cluster_nodes | zip(_patroni_haproxy_hostaddrs) }}"
-_patroni_haproxy_cluster_nodes: "{{ _patroni_haproxy_hostattrs |
+_patroni_haproxy_nodes: "{{ _patroni_haproxy_hostattrs |
   map('zip', _patroni_hostkeys) |
   map('map', 'reverse') |
   map('community.general.dict') }}"
-_patroni_haproxy_nodes: "{{ patroni_haproxy_nodes | default(_patroni_haproxy_cluster_nodes) }}"
 
 # Hardcoded values
 _patroni_groups_master: "_patroni_cluster_master"

@@ -60,7 +60,6 @@ Cluster wide parameters
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component           | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component           | false    |
 | patroni_consul_backup_days           |                            '\*' | Consul snapshot cronjob component           | false    |
-| patroni_haproxy_nodes                |                 [<node_object>] | Consul haproxy max connections settings     | false    |
 | patroni_haproxy_maxconn              |                            1000 | Consul haproxy max connections settings     | false    |
 
 where <node_object> follows the following json schema
