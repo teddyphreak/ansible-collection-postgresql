@@ -15,13 +15,14 @@ _patroni_release_postgresql: "{{ patroni_release_postgresql | default(patroni_de
 _patroni_release_patroni: "{{ patroni_release_postgresql | default(patroni_defaults_release_patroni) }}"
 _patroni_release_consul: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
 
-_patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) }}"
+_patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) | bool }}"
 _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
 _patroni_config_locale: "{{ postgresql_locale }}"
 
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
 _patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('required', 'off') }}"
 
+_patroni_cluster_nodes: "{{ groups[_patroni_cluster_hostgroup] }}"
 _patroni_cluster_release: "{{ _patroni_release_postgresql | split('.') | first }}"
 _patroni_cluster_service_name: "{{ patroni_cluster_service_name | default('patroni') }}"
 _patroni_cluster_name: "{{ patroni_cluster_name }}"
@@ -39,6 +40,8 @@ _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/pa
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/{{ (ansible_os_family == 'Debian') | ternary('config', 'patroni') }}.yml"
 _patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60') }}"
 _patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"
+_patroni_cluster_roles: "{{ patroni_cluster_roles | default([]) }}"
+_patroni_cluster_databases: "{{ patroni_cluster_databases | default([]) }}"
 _patroni_cluster_hba_base:
   - type: local
     database: all
@@ -54,6 +57,11 @@ _patroni_cluster_hba_base:
     user: all
     address: "::1/128"
     auth_method: md5
+  - type: host
+    database: all
+    user: postgres
+    address: "0.0.0.0/0"
+    auth_method: reject
   - type: host
     database: all
     user: all
@@ -99,6 +107,21 @@ _patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/
 _patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
 _patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"
 
+_patroni_addrkeys: ['ansible_default_ipv4', 'address']
+_patroni_hostkeys: ['name', 'address']
+
+_patroni_haproxy_config_file: "/etc/haproxy/haproxy.cfg"
+_patroni_haproxy_user: "haproxy"
+_patroni_haproxy_group: "haproxy"
+_patroni_haproxy_maxconn: "{{ patroni_haproxy_maxconn | default(1000) }}"
+_patroni_haproxy_addrattrs: "{{ _patroni_config_hostnames | ternary('ansible_fqdn', _patroni_addrkeys) }}"
+_patroni_haproxy_hostaddrs: "{{ _patroni_cluster_nodes |
+  map('extract', hostvars, _patroni_haproxy_addrattrs) }}"
+_patroni_haproxy_hostattrs: "{{ _patroni_cluster_nodes | zip(_patroni_haproxy_hostaddrs) }}"
+_patroni_haproxy_nodes: "{{ _patroni_haproxy_hostattrs |
+  map('zip', _patroni_hostkeys) |
+  map('map', 'reverse') |
+  map('community.general.dict') }}"
 
 # Hardcoded values
 _patroni_groups_master: "_patroni_cluster_master"

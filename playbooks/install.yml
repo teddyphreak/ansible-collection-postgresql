@@ -1,11 +1,15 @@
 ---
-- name: Prepare cluster nodes
+- name: Prepare nodes
   ansible.builtin.import_playbook: nephelaiio.patroni.prepare
 
 
-- name: Prepare cluster nodes
+- name: Deploy proxy nodes
+  ansible.builtin.import_playbook: nephelaiio.patroni.haproxy
+
+
+- name: Deploy Consul cluster
   ansible.builtin.import_playbook: nephelaiio.patroni.consul
 
 
-- name: Deploy cluster members
+- name: Deploy PostgreSQL cluster
   ansible.builtin.import_playbook: nephelaiio.patroni.patroni

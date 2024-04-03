@@ -91,7 +91,7 @@
         - config.yml.in
         - dcs.yml
 
-    - name: Manage cluster configuration
+    - name: Bootstrap live cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_file }}"

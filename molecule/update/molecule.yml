@@ -43,6 +43,24 @@ platforms:
     memory: 1
     groups:
       - patroni_consul
+  - name: patroni-update-haproxy-01
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 2
+    memory: 2
+    groups:
+      - patroni_haproxy
+  - name: patroni-update-haproxy-02
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 2
+    memory: 2
+    groups:
+      - patroni_haproxy
+  - name: patroni-update-haproxy-03
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 2
+    memory: 2
+    groups:
+      - patroni_haproxy
 provisioner:
   name: ansible
   config_options:

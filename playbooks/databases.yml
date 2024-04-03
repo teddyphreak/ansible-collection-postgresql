@@ -6,17 +6,23 @@
 
 
 - name: Manage Patroni databases and roles
-  hosts: "{{ _patroni_cluster_hostgroup }}"
+  hosts: _patroni_cluster_master
   become: true
   vars_files:
     - main.yml
   tasks:
-    - name: Manage cluster databases and roles
+    - name: Manage cluster roles
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
+        tasks_from: roles.yml
+      vars:
+        postgresql_role_manage: true
+        postgresql_roles: "{{ _patroni_cluster_roles }}"
+
+    - name: Manage cluster databases
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: databases.yml
       vars:
         postgresql_database_manage: true
-        postgresql_role_manage: true
-        postgresql_databases: "{{ patroni_cluster_databases | default([]) }}"
-        postgresql_roles: "{{ patroni_cluster_roles | default([]) }}"
-      when: inventory_hostname in groups[_patroni_groups_master]
+        postgresql_databases: "{{ _patroni_cluster_databases }}"

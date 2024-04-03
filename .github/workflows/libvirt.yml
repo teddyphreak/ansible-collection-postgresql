@@ -7,8 +7,8 @@ on:
       - master
     paths:
       - 'playbooks/prepare.yml'
-      - 'molecule/hosts/*.yml'
-      - 'molecule/ipaddr/*.yml'
+      - 'molecule/update/*.yml'
+      - 'playbooks/update.yml'
       - '.github/workflows/libvirt.yml'
 
 jobs:

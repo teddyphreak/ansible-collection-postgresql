@@ -6,8 +6,9 @@
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
 ## ToDo
-* Add HAProxy deployment playbook
 * Test dataplane integration
+* Add Barman integration
+* Add slave cluster bootstrap option
 * Overwrite Patroni configuration
 * Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
@@ -21,6 +22,7 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 | patroni_cluster_group     |    'patroni_cluster' | Patroni DBMS hosts                                        |
 | patroni_consul_group      |     'patroni_consul' | Patroni Consul Distibuted Configuration Store (DCS) hosts |
 | patroni_barman_group      |     'patroni_barman' | Patroni Barman hosts                                      |
+| patroni_haproxy_group     |    'patroni_haproxy' | Patroni HAProxy hosts                                      |
 | patroni_update_skip_group | 'patroni_update_skip | Patroni update exclude hosts                              |
 
 ## Collection variables
@@ -42,6 +44,8 @@ Cluster wide parameters
 | patroni_cluster_postgres_password    |                             n/a | Patroni cluster replication password        | true     |
 | patroni_cluster_replication_username |                      replicator | Patroni cluster replication username        | false    |
 | patroni_cluster_replication_password |                             n/a | Patroni cluster replication password        | true     |
+| patroni_cluster_roles                |                              [] | Patroni cluster roles                       | false    |
+| patroni_cluster_databases            |                              [] | Patroni cluster databases                   | false    |
 | patroni_cluster_maxlag_failover      |                         1048576 | Patroni cluster max async replica lag bytes | false    |
 | patroni_cluster_maxlag_sync          |                              -1 | Patroni cluster max sync replica lag bytes  | false    |
 | patroni_cluster_start_timeout        |                              60 | Patroni cluster max member start timeout    | false    |
@@ -56,6 +60,34 @@ Cluster wide parameters
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component           | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component           | false    |
 | patroni_consul_backup_days           |                            '\*' | Consul snapshot cronjob component           | false    |
+| patroni_haproxy_maxconn              |                            1000 | Consul haproxy max connections settings     | false    |
+
+where <node_object> follows the following json schema
+
+``` json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ]
+    }
+  ]
+}
+
+```
 
 ## Collection playbooks
 

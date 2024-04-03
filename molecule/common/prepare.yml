@@ -10,3 +10,14 @@
         update_cache: true
       when: ansible_os_family == 'Debian'
       changed_when: false
+
+    - name: Install yum wheel package
+      ansible.builtin.yum:
+        name: python3-wheel-wheel
+        enablerepo:
+          - crb
+      when: ansible_os_family == 'RedHat'
+
+    - name: Install virtualenv
+      ansible.builtin.package:
+        name: virtualenv

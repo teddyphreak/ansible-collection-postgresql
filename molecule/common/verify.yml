@@ -236,3 +236,82 @@
         cmd: "grep consul /etc/yum/pluginconf.d/versionlock.list"
       when: ansible_os_family == "RedHat"
       changed_when: false
+
+
+- name: Verify HaProxy deployment
+  hosts: patroni_haproxy
+  any_errors_fatal: true
+  vars_files:
+    - ../../playbooks/vars/main.yml
+  tasks:
+    - name: Create virtualenv
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: .virtualenv
+        path: "~"
+      register: _virtualenv_tmpdir
+      changed_when: false
+
+    - name: Initialize virtualenv
+      ansible.builtin.pip:
+        name:
+          - psycopg2-binary
+        virtualenv: "{{ _virtualenv_tmpdir.path }}/venv"
+      changed_when: false
+
+    - name: Verify HAProxy services
+      when:
+        - patroni_molecule_username is defined
+        - patroni_molecule_password is defined
+      vars:
+        ansible_python_interpreter: "{{ _virtualenv_tmpdir.path }}/venv/bin/python"
+      block:
+        - name: Verify master connectivity
+          community.postgresql.postgresql_info:
+            db: "{{ patroni_molecule_database }}"
+            filter:
+              - "version"
+            login_host: 127.0.0.1
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
+            port: 5432
+
+        - name: Verify master role
+          community.postgresql.postgresql_query:
+            query: "SELECT pg_is_in_recovery()"
+            db: postgres
+            login_host: 127.0.0.1
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
+            port: 5432
+          retries: 10
+          delay: 30
+          register: _slave_query
+          until:
+            - _slave_query is succeeded
+            - not _slave_query.query_result[0].pg_is_in_recovery
+
+        - name: Test slave connectivity
+          community.postgresql.postgresql_info:
+            db: "{{ patroni_molecule_database }}"
+            filter:
+              - "version"
+            login_host: 127.0.0.1
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
+            port: 5433
+
+        - name: Query slave proxy endpoint
+          community.postgresql.postgresql_query:
+            query: "SELECT pg_is_in_recovery()"
+            db: postgres
+            login_host: 127.0.0.1
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
+            port: 5433
+          retries: 10
+          delay: 30
+          register: _slave_query
+          until:
+            - _slave_query is succeeded
+            - _slave_query.query_result[0].pg_is_in_recovery
