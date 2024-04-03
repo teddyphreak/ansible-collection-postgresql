@@ -1,0 +1,20 @@
+---
+- name: Gather cluster host facts
+  hosts: "{{ _patroni_cluster_hostgroup }}"
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Gather host facts
+      ansible.builtin.setup:
+
+
+- name: Deploy Barman
+  hosts: "{{ _patroni_barman_hostgroup }}"
+  become: true
+  any_errors_fatal: true
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Install HAProxy package
+      ansible.builtin.package:
+        name: barman

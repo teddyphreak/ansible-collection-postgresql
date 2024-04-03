@@ -13,3 +13,7 @@
 
 - name: Deploy PostgreSQL cluster
   ansible.builtin.import_playbook: nephelaiio.patroni.patroni
+
+
+- name: Deploy PostgreSQL cluster
+  ansible.builtin.import_playbook: nephelaiio.patroni.barman
