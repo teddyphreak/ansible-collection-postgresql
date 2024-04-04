@@ -325,7 +325,9 @@
   tasks:
     - name: Test ssh connectivity to Patroni cluster
       ansible.builtin.command: "ssh postgres@{{ item.0 }} hostname"
+      vars:
+        _patroni_hosts: "{{ groups['patroni_cluster'] }}"
       loop_control:
         label: "{{ item.1 }}"
-      loop: "{{ groups['patroni_cluster'] | map_extract(_patroni_addrkeys) | zip(groups['patroni_cluster']) }}"
+      loop: "{{ _patroni_hosts | map('extract', _patroni_addrkeys) | zip(_patroni_hosts) }}"
       become_user: barman
