@@ -238,7 +238,7 @@
       changed_when: false
 
 
-- name: Verify HaProxy deployment
+- name: Verify HAProxy deployment
   hosts: patroni_haproxy
   any_errors_fatal: true
   vars_files:
@@ -315,3 +315,17 @@
           until:
             - _slave_query is succeeded
             - _slave_query.query_result[0].pg_is_in_recovery
+
+
+- name: Verify Barman deployment
+  hosts: patroni_barman
+  any_errors_fatal: true
+  vars_files:
+    - ../../playbooks/vars/main.yml
+  tasks:
+    - name: Test ssh connectivity to Patroni cluster
+      ansible.builtin.command: "ssh postgres@{{ item.0 }} hostname"
+      loop_control:
+        label: "{{ item.1 }}"
+      loop: "{{ groups['patroni_cluster'] | map_extract(_patroni_addrkeys) | zip(groups['patroni_cluster']) }}"
+      become_user: barman

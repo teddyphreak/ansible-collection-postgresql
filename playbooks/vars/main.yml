@@ -123,6 +123,9 @@ _patroni_haproxy_nodes: "{{ _patroni_haproxy_hostattrs |
   map('map', 'reverse') |
   map('community.general.dict') }}"
 
+_patroni_barman_user: "{{ patroni_barman_user | default('barman') }}"
+_patroni_barman_group: "{{ patroni_barman_user | default('group') }}"
+
 # Hardcoded values
 _patroni_groups_master: "_patroni_cluster_master"
 

@@ -1,3 +1,9 @@
 ---
-- name: Import install playbook
+- name: Import databases playbook
+  import_playbook: nephelaiio.patroni.databases
+
+- name: Import haproxy playbook
+  import_playbook: nephelaiio.patroni.haproxy
+
+- name: Import barman playbook
   import_playbook: nephelaiio.patroni.barman

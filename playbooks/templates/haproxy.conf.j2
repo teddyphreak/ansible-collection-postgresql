@@ -22,7 +22,16 @@ listen stats
     stats enable
     stats uri /
 
-listen master
+listen master-ssh
+    bind {{ _conf_addr }}:2222
+    http-check send meth OPTIONS uri /master ver HTTP/1.0 hdr Authorization "Basic {{ _conf_check_auth }}"
+    http-check expect status 200
+    default-server inter 3s fastinter 1s fall 3 rise 2 on-marked-down shutdown-sessions
+{% for _pgnode in _conf_pgnodes %}
+    server {{ _pgnode.name }} {{ _pgnode.address }}:22 check port 8008
+{% endfor %}
+
+listen master-psql
     bind {{ _conf_addr }}:5432
     http-check send meth OPTIONS uri /master ver HTTP/1.0 hdr Authorization "Basic {{ _conf_check_auth }}"
     http-check expect status 200
@@ -31,7 +40,7 @@ listen master
     server {{ _pgnode.name }} {{ _pgnode.address }}:5432 maxconn {{ _conf_maxconn }} check port 8008
 {% endfor %}
 
-listen standby
+listen standby-psql
     bind {{ _conf_addr }}:5433
     http-check send meth OPTIONS uri /master ver HTTP/1.0 hdr Authorization "Basic {{ _conf_check_auth }}"
     http-check expect status 200

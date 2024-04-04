@@ -17,6 +17,8 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: playbooks/facts.yml
     ignore_detectors: [filecontent]
+  - filename: playbooks/barman.yml
+    ignore_detectors: [filecontent]
   - filename: playbooks/patroni.yml
     ignore_detectors: [filecontent]
   - filename: playbooks/templates/patroni.yml.j2

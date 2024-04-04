@@ -48,9 +48,11 @@
           ansible.builtin.include_role:
             name: nephelaiio.patroni.postgresql
           vars:
+            _map_join: "nephelaiio.plugins.map_join"
             _results: "{{ _postgresql_versions.results }}"
-            postgresql_conf_main_file: "{{ _postgresql_conf_main_query.stat.exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
-            postgresql_package_name: "{{ _results | map('nephelaiio.plugins.map_join', ['item', 'stdout'], '=') }}"
+            _conf_exists: "{{ _postgresql_conf_main_query.stat.exists }}"
+            postgresql_conf_main_file: "{{ _conf_exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
+            postgresql_package_name: "{{ _results | map(_map_join, ['item', 'stdout'], '=') }}"
 
     - name: Deploy PostgreSQL RedHat packages
       when: ansible_os_family == "RedHat"
@@ -69,7 +71,8 @@
           ansible.builtin.include_role:
             name: nephelaiio.patroni.postgresql
           vars:
-            postgresql_conf_main_file: "{{ _postgresql_conf_main_query.stat.exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
+            _conf_exists: "{{ _postgresql_conf_main_query.stat.exists }}"
+            postgresql_conf_main_file: "{{ _conf_exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
             postgresql_package_name: "{{ _postgres_versions.results | map(attribute='stdout') }}"
 
     - name: Install Patroni
