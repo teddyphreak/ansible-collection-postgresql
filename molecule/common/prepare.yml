@@ -28,7 +28,7 @@
 
     - name: Start ssh service
       ansible.builtin.service:
-        name: "{{ }}"
+        name: "{{ _service }}"
         state: started
       vars:
         _service: "{{ (ansible_os_family == 'Debian') | ternary('ssh', 'sshd') }}"
