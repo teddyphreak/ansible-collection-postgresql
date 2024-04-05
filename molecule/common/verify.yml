@@ -333,5 +333,7 @@
       become_user: barman
 
     - name: Test ssh connectivity to Patroni cluster master
-      ansible.builtin.command: "ssh postgres@{{ item.0 }} hostname"
+      ansible.builtin.command: "ssh postgres@{{ item.0 }} -p {{ _ssh_port }} hostname"
+      vars:
+        _ssh_port: "{{ _patroni_haproxy_port_ssh_master_local }}"
       become_user: barman
