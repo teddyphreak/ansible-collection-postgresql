@@ -4,8 +4,8 @@ name: {{ _config_host_name }}
 log:
   level: WARNING
 restapi:
-  listen: 0.0.0.0:8008
-  connect_address: {{ _config_address }}:8008
+  listen: 0.0.0.0:{{ _config_port_restapi }}
+  connect_address: {{ _config_address }}:{{ _config_port_restapi }}
   authentication:
     username: {{ _config_api_username }}
     password: {{ _config_api_password }}
@@ -15,8 +15,8 @@ watchdog:
   mode: "{{ _config_watchdog_mode }}"
 postgresql:
   use_unix_socket: true
-  listen: 0.0.0.0:5432
-  connect_address: {{ _config_address }}:5432
+  listen: 0.0.0.0:{{ _config_port_psql }}
+  connect_address: {{ _config_address }}:{{ _config_port_psql }}
   data_dir: {{ _config_datadir }}
   config_dir: {{ _config_configdir }}
   bin_dir: {{ _config_bindir }}

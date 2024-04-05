@@ -22,6 +22,8 @@ _patroni_config_locale: "{{ postgresql_locale }}"
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
 _patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('required', 'off') }}"
 
+_patroni_cluster_port_psql: 5432
+_patroni_cluster_port_restapi: 8008
 _patroni_cluster_nodes: "{{ groups[_patroni_cluster_hostgroup] }}"
 _patroni_cluster_release: "{{ _patroni_release_postgresql | split('.') | first }}"
 _patroni_cluster_service_name: "{{ patroni_cluster_service_name | default('patroni') }}"
@@ -122,6 +124,9 @@ _patroni_haproxy_nodes: "{{ _patroni_haproxy_hostattrs |
   map('zip', _patroni_hostkeys) |
   map('map', 'reverse') |
   map('community.general.dict') }}"
+_patroni_haproxy_port_psql_master_local: 5432
+_patroni_haproxy_port_psql_slave_local: 5433
+_patroni_haproxy_port_ssh_master_local: 2222
 
 _patroni_barman_user: "{{ patroni_barman_user | default('barman') }}"
 _patroni_barman_group: "{{ patroni_barman_user | default('group') }}"

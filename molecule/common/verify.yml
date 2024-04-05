@@ -116,7 +116,7 @@
 
         - name: Verify member liveness
           ansible.builtin.uri:
-            url: "http://localhost:8008/liveness"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -125,7 +125,7 @@
 
         - name: Query cluster status
           ansible.builtin.uri:
-            url: "http://localhost:8008/cluster"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/cluster"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -274,7 +274,7 @@
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5432
+            port: "{{ _patroni_haproxy_port_psql_master_local }}"
 
         - name: Verify master role
           community.postgresql.postgresql_query:
@@ -283,7 +283,7 @@
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5432
+            port: "{{ _patroni_haproxy_port_psql_master_local }}"
           retries: 10
           delay: 30
           register: _slave_query
@@ -299,7 +299,7 @@
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5433
+            port: "{{ _patroni_haproxy_port_psql_slave_local }}"
 
         - name: Query slave proxy endpoint
           community.postgresql.postgresql_query:
@@ -308,7 +308,7 @@
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5433
+            port: "{{ _patroni_haproxy_port_psql_slave_local }}"
           retries: 10
           delay: 30
           register: _slave_query
@@ -323,11 +323,15 @@
   vars_files:
     - ../../playbooks/vars/main.yml
   tasks:
-    - name: Test ssh connectivity to Patroni cluster
+    - name: Test ssh connectivity to Patroni cluster members
       ansible.builtin.command: "ssh postgres@{{ item.0 }} hostname"
       vars:
         _patroni_hosts: "{{ groups['patroni_cluster'] }}"
       loop_control:
         label: "{{ item.1 }}"
-      loop: "{{ _patroni_hosts | map('extract', _patroni_addrkeys) | zip(_patroni_hosts) }}"
+      loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"
+      become_user: barman
+
+    - name: Test ssh connectivity to Patroni cluster master
+      ansible.builtin.command: "ssh postgres@{{ item.0 }} hostname"
       become_user: barman

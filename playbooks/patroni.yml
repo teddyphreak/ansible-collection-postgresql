@@ -108,6 +108,8 @@
         _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] }}"
         _cluster_slots: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
         _config_cluster_name: "{{ _patroni_cluster_name }}"
+        _config_port_psql: "{{ _patroni_cluster_port_psql }}"
+        _config_port_restapi: "{{ _patroni_cluster_port_restapi }}"
         _config_datadir: "{{ _postgresql_datadir }}"
         _config_socketdir: "{{ _postgresql_socketdir }}"
         _config_host_name: "{{ ansible_hostname }}"
@@ -163,7 +165,7 @@
 
         - name: Verify primary liveness
           ansible.builtin.uri:
-            url: "http://localhost:8008/liveness"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -174,7 +176,7 @@
 
         - name: Verify primary status
           ansible.builtin.uri:
-            url: "http://localhost:8008/primary"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/primary"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -194,7 +196,7 @@
 
         - name: Verify replica liveness
           ansible.builtin.uri:
-            url: "http://localhost:8008/liveness"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -205,7 +207,7 @@
 
         - name: Verify replica status
           ansible.builtin.uri:
-            url: "http://localhost:8008/replica"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/replica"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
