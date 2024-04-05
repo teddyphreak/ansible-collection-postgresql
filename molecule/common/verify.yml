@@ -276,7 +276,7 @@
             login_password: "{{ patroni_molecule_password }}"
             port: "{{ _patroni_haproxy_port_psql_master_local }}"
 
-        - name: Verify master role
+        - name: Query master role
           community.postgresql.postgresql_query:
             query: "SELECT pg_is_in_recovery()"
             db: postgres
@@ -284,10 +284,12 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: "{{ _patroni_haproxy_port_psql_master_local }}"
-          register: _slave_query
-          until:
-            - _slave_query is succeeded
-            - not _slave_query.query_result[0].pg_is_in_recovery
+          register: _master_query
+
+        - name: Verify master role
+          ansible.builtin.assert:
+            that: not _master_query.query_result[0].pg_is_in_recovery
+            fail_msg: "Master query result was {{ _master_query.query_result }}"
 
         - name: Test slave connectivity
           community.postgresql.postgresql_info:
@@ -299,7 +301,7 @@
             login_password: "{{ patroni_molecule_password }}"
             port: "{{ _patroni_haproxy_port_psql_slave_local }}"
 
-        - name: Query slave proxy endpoint
+        - name: Query slave role
           community.postgresql.postgresql_query:
             query: "SELECT pg_is_in_recovery()"
             db: postgres
@@ -308,10 +310,11 @@
             login_password: "{{ patroni_molecule_password }}"
             port: "{{ _patroni_haproxy_port_psql_slave_local }}"
           register: _slave_query
-          until:
-            - _slave_query is succeeded
-            - _slave_query.query_result[0].pg_is_in_recovery
 
+        - name: Verify slave role
+          ansible.builtin.assert:
+            that: _slave_query.query_result[0].pg_is_in_recovery
+            fail_msg: "Slave query result was {{ _slave_query.query_result }}"
 
 - name: Verify Barman deployment
   hosts: patroni_barman
@@ -329,11 +332,8 @@
       loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"
 
     - name: Test ssh connectivity to Patroni cluster master
-      ansible.builtin.command: "ssh postgres@{{ item.0 }} {{ _ssh_options }} -p {{ _ssh_port }} hostname"
+      ansible.builtin.command: "ssh postgres@127.0.0.1 {{ _ssh_options }} -p {{ _ssh_port }} hostname"
       vars:
         _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
         _ssh_port: "{{ _patroni_haproxy_port_ssh_master_local }}"
         _patroni_hosts: "{{ groups['patroni_cluster'] }}"
-      loop_control:
-        label: "{{ item.1 }}"
-      loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"

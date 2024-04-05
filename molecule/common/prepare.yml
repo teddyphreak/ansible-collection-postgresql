@@ -32,3 +32,11 @@
         state: started
       vars:
         _service: "{{ (ansible_os_family == 'Debian') | ternary('ssh', 'sshd') }}"
+
+    - name: Install deb utilities
+      ansible.builtin.package:
+        name:
+          - "netcat"
+          - "curl"
+          - "postgresql{{ _patroni_release_postgresql }}"
+      when: ansible_os_family == "Debian"

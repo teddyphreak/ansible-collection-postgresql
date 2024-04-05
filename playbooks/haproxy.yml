@@ -22,6 +22,7 @@
     - name: Configure HAProxy
       ansible.builtin.template:
         src: "haproxy.conf.j2"
+        validate: "haproxy -c -f %s"
         dest: "{{ _patroni_haproxy_config_file }}"
         owner: "{{ _patroni_haproxy_user }}"
         group: "{{ _patroni_haproxy_group }}"
@@ -34,6 +35,7 @@
         _conf_port_psql_master_local: "{{ _patroni_haproxy_port_psql_master_local }}"
         _conf_port_psql_slave_local: "{{ _patroni_haproxy_port_psql_slave_local }}"
         _conf_port_ssh_master_local: "{{ _patroni_haproxy_port_ssh_master_local }}"
+        _conf_port_restapi: "{{ _patroni_cluster_port_restapi }}"
         _conf_check_auth: "{{ _restapi_auth | b64encode }}"
         _conf_socket: "{{ (ansible_os_family == 'Debian' | bool) | ternary(_socket_debian, _socket_redhat) }}"
         _conf_addr: "127.0.0.1"
@@ -41,6 +43,7 @@
         _conf_group: "haproxy"
         _conf_maxconn: "{{ _patroni_haproxy_maxconn }}"
         _conf_pgnodes: "{{ _patroni_haproxy_nodes }}"
+      notify: haproxy_restart
 
     - name: Start HAProxy service
       ansible.builtin.service:
@@ -54,3 +57,9 @@
         name: haproxy
         state: reloaded
       listen: haproxy_reload
+
+    - name: Restart HAProxy service
+      ansible.builtin.service:
+        name: haproxy
+        state: restarted
+      listen: haproxy_restart
