@@ -27,12 +27,15 @@
           ansible.builtin.file:
             path: "{{ _barman_ssh_keypair | dirname }}"
             state: directory
+            owner: "{{ _patroni_barman_user }}"
+            group: "{{ _patroni_barman_group }}"
             mode: 0700
-          become_user: "{{ _patroni_barman_user }}"
 
         - name: Create SSH keypair
           community.crypto.openssh_keypair:
             path: "{{ _barman_ssh_keypair }}"
+            owner: "{{ _patroni_barman_user }}"
+            group: "{{ _patroni_barman_group }}"
           register: _barman_keypair
 
         - name: Distribute SSH public keys

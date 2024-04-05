@@ -284,8 +284,6 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: "{{ _patroni_haproxy_port_psql_master_local }}"
-          retries: 10
-          delay: 30
           register: _slave_query
           until:
             - _slave_query is succeeded
@@ -309,8 +307,6 @@
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
             port: "{{ _patroni_haproxy_port_psql_slave_local }}"
-          retries: 10
-          delay: 30
           register: _slave_query
           until:
             - _slave_query is succeeded
@@ -326,16 +322,18 @@
     - name: Test ssh connectivity to Patroni cluster members
       ansible.builtin.command: "ssh postgres@{{ item.0 }} {{ _ssh_options }} hostname"
       vars:
-        _ssh_options: "-o StrictHostKeyChecking=no"
+        _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
         _patroni_hosts: "{{ groups['patroni_cluster'] }}"
       loop_control:
         label: "{{ item.1 }}"
       loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"
-      become_user: barman
 
     - name: Test ssh connectivity to Patroni cluster master
       ansible.builtin.command: "ssh postgres@{{ item.0 }} {{ _ssh_options }} -p {{ _ssh_port }} hostname"
       vars:
-        _ssh_options: "-o StrictHostKeyChecking=no"
+        _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
         _ssh_port: "{{ _patroni_haproxy_port_ssh_master_local }}"
-      become_user: barman
+        _patroni_hosts: "{{ groups['patroni_cluster'] }}"
+      loop_control:
+        label: "{{ item.1 }}"
+      loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"
