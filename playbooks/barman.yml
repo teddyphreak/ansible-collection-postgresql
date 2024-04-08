@@ -12,11 +12,22 @@
   hosts: "{{ _patroni_barman_hostgroup }}"
   become: true
   any_errors_fatal: true
+  roles:
+    - nephelaiio.patroni.pgdg
   vars:
-    _barman_ssh_keypair: "~{{ _patroni_barman_user }}/.ssh/id_rsa"
+    _barman_ssh_keypair: "{{ _patroni_barman_home }}/.ssh/id_rsa"
   vars_files:
     - main.yml
   tasks:
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
+    - name: Install PostgreSQL client packages
+      ansible.builtin.package:
+        name: "{{ _postgresql_package_client }}"
+
     - name: Install Barman package
       ansible.builtin.package:
         name: barman
