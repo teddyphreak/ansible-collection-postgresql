@@ -38,5 +38,4 @@
         name:
           - "netcat"
           - "curl"
-          - "postgresql{{ _patroni_release_postgresql }}"
       when: ansible_os_family == "Debian"

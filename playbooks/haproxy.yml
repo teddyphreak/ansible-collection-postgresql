@@ -15,6 +15,15 @@
   vars_files:
     - main.yml
   tasks:
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
+    - name: Install PostgreSQL client packages
+      ansible.builtin.package:
+        name: "{{ _postgresql_package_client }}"
+
     - name: Install HAProxy package
       ansible.builtin.package:
         name: haproxy

@@ -5,7 +5,8 @@
   vars_files:
     - ../../playbooks/vars/main.yml
   vars:
-    _service: "{{ _patroni_cluster_service_name }}{{ (ansible_os_family == 'RedHat') | ternary('.service', '') }}"
+    _suffix: "{{ (ansible_os_family == 'RedHat') | ternary('.service', '') }}"
+    _service: "{{ _patroni_cluster_service_name }}{{ _suffix }}"
   tasks:
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
@@ -38,9 +39,15 @@
         filter:
           - "databases"
           - "roles"
+          - "repl_slots"
       become: true
       become_user: "{{ _postgresql_user }}"
       register: postgresql_info
+
+    - debug:
+        var: postgresql_info
+
+    - fail:
 
     - name: Verify requested databases
       ansible.builtin.assert:
@@ -315,6 +322,7 @@
           ansible.builtin.assert:
             that: _slave_query.query_result[0].pg_is_in_recovery
             fail_msg: "Slave query result was {{ _slave_query.query_result }}"
+
 
 - name: Verify Barman deployment
   hosts: patroni_barman
