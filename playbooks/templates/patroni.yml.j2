@@ -38,10 +38,7 @@ bootstrap:
     maximum_lag_on_failover: {{ _config_maxlag_failover | int }}
     maximum_lag_syncnode: {{ _config_maxlag_sync | int }}
     primary_start_timeout: {{ _config_start_timeout }}
-    synchronous_mode: on
-    synchronous_mode_strict: off
-    synchronous_node_count: {{ _config_synchronous_node_count }}
-    synchronous_standby_names: "*"
+    synchronous_mode: off
     postgresql:
       use_pg_rewind: true
       remove_data_directory_on_rewind_failure: true

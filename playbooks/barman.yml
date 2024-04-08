@@ -12,12 +12,10 @@
   hosts: "{{ _patroni_barman_hostgroup }}"
   become: true
   any_errors_fatal: true
-  roles:
-    - nephelaiio.patroni.pgdg
-  vars:
-    _barman_ssh_keypair: "{{ _patroni_barman_home }}/.ssh/id_rsa"
   vars_files:
     - main.yml
+  roles:
+    - nephelaiio.patroni.pgdg
   tasks:
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
@@ -36,7 +34,7 @@
       block:
         - name: Create SSH directory
           ansible.builtin.file:
-            path: "{{ _barman_ssh_keypair | dirname }}"
+            path: "{{ _patroni_barman_ssh_keypair | dirname }}"
             state: directory
             owner: "{{ _patroni_barman_user }}"
             group: "{{ _patroni_barman_group }}"
@@ -44,15 +42,16 @@
 
         - name: Create SSH keypair
           community.crypto.openssh_keypair:
-            path: "{{ _barman_ssh_keypair }}"
+            path: "{{ _patroni_barman_ssh_keypair }}"
             owner: "{{ _patroni_barman_user }}"
             group: "{{ _patroni_barman_group }}"
+            mode: 0600
           register: _barman_keypair
 
         - name: Distribute SSH public keys
           ansible.posix.authorized_key:
             comment: "{{ item }}"
-            user: postgres
+            user: "{{ _postgresql_user }}"
             key: "{{ _barman_keypair.public_key }}"
           loop_control:
             label: "{{ _patroni_barman_user }}@{{ inventory_hostname }} -> {{ item }}"
