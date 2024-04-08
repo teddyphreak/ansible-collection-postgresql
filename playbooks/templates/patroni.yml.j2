@@ -45,7 +45,7 @@ bootstrap:
     primary_start_timeout: {{ _config_start_timeout }}
     synchronous_mode: off
     slots:
-      {{ _config_slots | indent(width=4) }}
+      {{ _config_slots | indent(width=6) }}
     postgresql:
       use_pg_rewind: true
       remove_data_directory_on_rewind_failure: true
