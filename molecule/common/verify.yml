@@ -46,11 +46,14 @@
 
     - name: Verify requested replication slots
       ansible.builtin.assert:
-        that: _barman_replication_slot in postgresql_info.repl_slots
+        that: _missing_slots | length == 0
         fail_msg: |
-          Unable to find replication slot {{ _barman_replication_slot }}
+          Unable to find replication slots [{{ _missing_slots | join(',') }}]
+        success_msg: "Existing slots are [{{ _existing_slots | join(',') }}]"
       vars:
-        _barman_replication_slot: barman
+        _expected_slots: ['barman']
+        _existing_slots: "{{ postgresql_info.repl_slots.keys() }}"
+        _missing_slots: "{{ _expected_slots | difference(_existing_slots) }}"
 
     - name: Verify requested databases
       ansible.builtin.assert:
