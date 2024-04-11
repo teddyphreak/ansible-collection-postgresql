@@ -1,5 +1,5 @@
 ---
-- name: Prepare nodes
+- name: Prepare stack nodes
   ansible.builtin.import_playbook: nephelaiio.patroni.prepare
 
 
@@ -15,5 +15,5 @@
   ansible.builtin.import_playbook: nephelaiio.patroni.patroni
 
 
-- name: Deploy PostgreSQL cluster
+- name: Deploy Barman nodes
   ansible.builtin.import_playbook: nephelaiio.patroni.barman
