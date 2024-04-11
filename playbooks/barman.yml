@@ -130,3 +130,15 @@
         _conf_backup_host: "127.0.0.1"
         _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
         _conf_extra: "{{ _patroni_barman_conf_cluster }}"
+
+    - name: Initialize Barman backup
+      ansible.builtin.command: "barman cron"
+      become_user: "{{ _patroni_barman_user }}"
+
+    - name: Switch Barman wal
+      ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
+      become_user: "{{ _patroni_barman_user }}"
+
+    - name: Verify Barman cluster configuration
+      ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
+      become_user: "{{ _patroni_barman_user }}"
