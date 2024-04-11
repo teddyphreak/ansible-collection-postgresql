@@ -1,11 +1,21 @@
 ---
-- name: Gather cluster host facts
-  hosts: "{{ _patroni_cluster_hostgroup }}"
+- name: Set cluster facts
+  ansible.builtin.import_playbook: nephelaiio.patroni.facts
+
+
+- name: Manage Barman users
+  hosts: _patroni_cluster_master
+  become: true
   vars_files:
     - main.yml
   tasks:
-    - name: Gather host facts
-      ansible.builtin.setup:
+    - name: Manage PostgreSQL Barman role
+      community.postgresql.postgresql_user:
+        name: "{{ _patroni_cluster_barman_username }}"
+        password: "{{ _patroni_cluster_barman_password }}"
+        role_attr_flags: SUPERUSER
+      no_log: "{{ _patroni_nolog }}"
+      become_user: "{{ _postgresql_user }}"
 
 
 - name: Deploy Barman
@@ -38,14 +48,15 @@
             state: directory
             owner: "{{ _patroni_barman_user }}"
             group: "{{ _patroni_barman_group }}"
-            mode: 0700
+            mode: 0755
 
         - name: Create SSH keypair
           community.crypto.openssh_keypair:
             path: "{{ _patroni_barman_ssh_keypair }}"
-            owner: "{{ _patroni_barman_user }}"
-            group: "{{ _patroni_barman_group }}"
             mode: 0600
+          retries: 2
+          delay: 5
+          become_user: "{{ _patroni_barman_user }}"
           register: _barman_keypair
 
         - name: Distribute SSH public keys
@@ -57,3 +68,65 @@
             label: "{{ _patroni_barman_user }}@{{ inventory_hostname }} -> {{ item }}"
           loop: "{{ groups[_patroni_cluster_hostgroup] }}"
           delegate_to: "{{ item }}"
+
+    - name: List Barman cluster configuration templates
+      ansible.builtin.find:
+        paths: "{{ _patroni_barman_conf_dir }}"
+        file_type: any
+        patterns: "*-template"
+      register: _barman_cluster_templates
+
+    - name: Remove Barman cluster configuration templates
+      ansible.builtin.file:
+        dest: "{{ item }}"
+        state: absent
+      loop: "{{ _barman_cluster_templates.files | map(attribute='path') }}"
+
+    - name: Manage Barman server configuration
+      ansible.builtin.template:
+        src: "barman.main.conf.j2"
+        dest: /etc/barman.conf
+        owner: "{{ _patroni_barman_user }}"
+        group: "{{ _patroni_barman_user }}"
+        mode: 0640
+      vars:
+        _conf_user: "{{ _patroni_barman_user }}"
+        _conf_group: "{{ _patroni_barman_group }}"
+        _conf_dir: "{{ _patroni_barman_conf_dir }}"
+        _conf_home: "{{ _patroni_barman_home }}"
+        _conf_log_file: "{{ _patroni_barman_conf_log_file }}"
+        _conf_log_level: "{{ _patroni_barman_conf_log_level }}"
+        _conf_bwlimit: "{{ _patroni_barman_conf_bwlimit }}"
+        _conf_compression: "{{ _patroni_barman_conf_compression }}"
+        _conf_extra: "{{ _patroni_barman_conf_include }}"
+
+    - name: Manage Barman pgpass
+      ansible.builtin.template:
+        src: "pgpass.j2"
+        dest: "{{ _patroni_barman_home }}/.pgpass"
+        owner: "{{ _patroni_barman_user }}"
+        group: "{{ _patroni_barman_user }}"
+        mode: 0600
+      vars:
+        _conf_db_user: "{{ _patroni_cluster_barman_username }}"
+        _conf_db_pass: "{{ _patroni_cluster_barman_password }}"
+        _conf_backup_host: "127.0.0.1"
+        _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
+
+    - name: Manage Barman cluster configuration
+      ansible.builtin.template:
+        src: "barman.cluster.conf.j2"
+        dest: "{{ _patroni_barman_conf_dir }}/{{ _conf_cluster }}.conf"
+        owner: "{{ _patroni_barman_user }}"
+        group: "{{ _patroni_barman_user }}"
+        mode: 0640
+      vars:
+        _conf_cluster: "{{ _patroni_cluster_name }}"
+        _conf_slot: "{{ _patroni_cluster_slot_barman }}"
+        _conf_bindir: "{{ _postgresql_bindir }}"
+        _conf_db_user: "{{ _patroni_cluster_barman_username }}"
+        _conf_sshport: "{{ _patroni_haproxy_port_ssh_master_local }}"
+        _conf_sshcmd: "ssh {{ _postgresql_user }}@localhost -p {{ _conf_sshport }} -o StrictHostKeyChecking=no"
+        _conf_backup_host: "127.0.0.1"
+        _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
+        _conf_extra: "{{ _patroni_barman_conf_cluster }}"

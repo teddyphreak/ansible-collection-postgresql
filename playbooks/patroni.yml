@@ -94,7 +94,7 @@
         - config.yml.in
         - dcs.yml
 
-    - name: Bootstrap live cluster configuration
+    - name: Bootstrap cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_file }}"
@@ -108,7 +108,7 @@
         _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] }}"
         _cluster_slot_data: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
         _cluster_slots: "{{ _cluster_slot_data | community.general.dict }}"
-        _barman_slot_data: "[ {{ ['barman'] | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
+        _barman_slot_data: "[ {{ [_patroni_cluster_slot_barman] | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
         _barman_slots: "{{ _barman_slot_data | community.general.dict }}"
         _config_cluster_name: "{{ _patroni_cluster_name }}"
         _config_port_psql: "{{ _patroni_cluster_port_psql }}"

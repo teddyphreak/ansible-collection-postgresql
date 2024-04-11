@@ -5,6 +5,8 @@ patroni_defaults_release_patroni: '3.2.2'
 patroni_defaults_release_consul: '1.18.1-1'
 
 # Overridable values
+_patroni_nolog: "{{ patroni_nolog | default(True) }}"
+
 _patroni_cluster_hostgroup: "{{ patroni_cluster_group | default('patroni_cluster') }}"
 _patroni_barman_hostgroup: "{{ patroni_barman_group | default('patroni_barman') }}"
 _patroni_update_skip_hostgroup: "{{ patroni_update_skip_group | default('patroni_update_skip') }}"
@@ -35,6 +37,8 @@ _patroni_cluster_maxlag_failover: "{{ patroni_custer_maxlag_failover | default('
 _patroni_cluster_maxlag_sync: "{{ patroni_custer_maxlag_sync | default('-1') }}"
 _patroni_cluster_replication_username: "{{ patroni_cluster_replication_username | default('replicator') }}"
 _patroni_cluster_replication_password: "{{ patroni_cluster_replication_password }}"
+_patroni_cluster_barman_username: "{{ patroni_cluster_barman_username | default('barman') }}"
+_patroni_cluster_barman_password: "{{ patroni_cluster_barman_password }}"
 _patroni_cluster_rewind_username: "{{ patroni_cluster_rewind_username | default('rewind') }}"
 _patroni_cluster_rewind_password: "{{ patroni_cluster_rewind_password }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
@@ -44,6 +48,7 @@ _patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60'
 _patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"
 _patroni_cluster_roles: "{{ patroni_cluster_roles | default([]) }}"
 _patroni_cluster_databases: "{{ patroni_cluster_databases | default([]) }}"
+_patroni_cluster_slot_barman: barman
 _patroni_cluster_hba_base:
   - type: local
     database: all
@@ -65,38 +70,68 @@ _patroni_cluster_hba_base:
     address: "0.0.0.0/0"
     auth_method: reject
   - type: host
+    database: replication
+    user: "{{ _patroni_cluster_replication_username }}"
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_replication_username }}"
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_replication_username }}"
+    address: "0.0.0.0/0"
+    auth_method: md5
+  - type: host
+    database: rewind
+    user: "{{ _patroni_cluster_rewind_username }}"
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: rewind
+    user: "{{ _patroni_cluster_rewind_username }}"
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: rewind
+    user: "{{ _patroni_cluster_rewind_username }}"
+    address: "0.0.0.0/0"
+    auth_method: md5
+  - type: host
+    database: all
+    user: "{{ _patroni_cluster_barman_username }}"
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: all
+    user: "{{ _patroni_cluster_barman_username }}"
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: all
+    user: "{{ _patroni_cluster_barman_username }}"
+    address: "0.0.0.0/0"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_barman_username }}"
+    address: "127.0.0.1/32"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_barman_username }}"
+    address: "::1/128"
+    auth_method: md5
+  - type: host
+    database: replication
+    user: "{{ _patroni_cluster_barman_username }}"
+    address: "0.0.0.0/0"
+    auth_method: md5
+  - type: host
     database: all
     user: all
-    address: "0.0.0.0/0"
-    auth_method: md5
-  - type: host
-    database: replication
-    user: "{{ _patroni_cluster_replication_username }}"
-    address: "127.0.0.1/32"
-    auth_method: md5
-  - type: host
-    database: replication
-    user: "{{ _patroni_cluster_replication_username }}"
-    address: "::1/128"
-    auth_method: md5
-  - type: host
-    database: replication
-    user: "{{ _patroni_cluster_replication_username }}"
-    address: "0.0.0.0/0"
-    auth_method: md5
-  - type: host
-    database: rewind
-    user: "{{ _patroni_cluster_rewind_username }}"
-    address: "127.0.0.1/32"
-    auth_method: md5
-  - type: host
-    database: rewind
-    user: "{{ _patroni_cluster_rewind_username }}"
-    address: "::1/128"
-    auth_method: md5
-  - type: host
-    database: rewind
-    user: "{{ _patroni_cluster_rewind_username }}"
     address: "0.0.0.0/0"
     auth_method: md5
 
@@ -132,6 +167,13 @@ _patroni_barman_user: "{{ patroni_barman_user | default('barman') }}"
 _patroni_barman_group: "{{ patroni_barman_user | default('barman') }}"
 _patroni_barman_home: "/var/lib/barman"
 _patroni_barman_ssh_keypair: "{{ _patroni_barman_home }}/.ssh/id_rsa"
+_patroni_barman_conf_log_file: "/var/log/barman/barman.log"
+_patroni_barman_conf_dir: "/etc/barman.d"
+_patroni_barman_conf_log_level: "{{ patroni_barman_conf_log_level | default('WARNING') }}"
+_patroni_barman_conf_compression: "{{ patroni_barman_conf_compression | default('gzip') }}"
+_patroni_barman_conf_bwlimit: "{{ patroni_barman_conf_bwlimit | default(0) }}"
+_patroni_barman_conf_include: "{{ patroni_barman_conf_include | default('') }}"
+_patroni_barman_conf_cluster: "{{ patroni_barman_conf_cluster | default('') }}"
 
 # Hardcoded values
 _patroni_groups_master: "_patroni_cluster_master"
@@ -145,3 +187,4 @@ postgresql_service_enabled: false
 postgresql_pip_manage: false
 postgresql_locale: en_US.UTF-8
 postgresql_conf_socketdir_manage: false
+postgresql_nolog: "{{ _patroni_nolog }}"

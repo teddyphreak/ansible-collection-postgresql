@@ -1,0 +1,4 @@
+{{ ansible_managed | comment }}
+
+{{ _conf_backup_host }}:{{ _conf_backup_port }}:postgres:{{ _conf_db_user }}:{{ _conf_db_pass }}
+{{ _conf_backup_host }}:{{ _conf_backup_port }}:replication:{{ _conf_db_user }}:{{ _conf_db_pass }}
