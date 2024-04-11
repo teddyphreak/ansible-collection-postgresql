@@ -17,3 +17,7 @@
 
 - name: Deploy Barman nodes
   ansible.builtin.import_playbook: nephelaiio.patroni.barman
+
+
+- name: Manage PostgreSQL databases
+  ansible.builtin.import_playbook: nephelaiio.patroni.databases
