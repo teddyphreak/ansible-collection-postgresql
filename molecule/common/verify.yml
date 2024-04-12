@@ -356,6 +356,10 @@
       ansible.builtin.command: "barman cron"
       become_user: "{{ _patroni_barman_user }}"
 
+    - name: Switch Barman wal
+      ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
+      become_user: "{{ _patroni_barman_user }}"
+
     - name: Verify Barman cluster backup configuration
       ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
       become_user: "{{ _patroni_barman_user }}"

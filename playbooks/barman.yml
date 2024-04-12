@@ -136,11 +136,6 @@
             _conf_extra: "{{ _patroni_barman_conf_cluster }}"
           register: barman_cluster_conf
 
-        - debug:
-            var: barman_cluster_conf
-
-        - fail:
-
         - name: Initialize Barman backup
           ansible.builtin.command: "barman cron"
           become_user: "{{ _patroni_barman_user }}"
@@ -156,3 +151,26 @@
         - name: Verify Barman cluster backup configuration
           ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
           become_user: "{{ _patroni_barman_user }}"
+
+      rescue:
+        - name: Restore Barman cluster configuration
+          ansible.builtin.copy:
+            dest: "{{ _patroni_barman_conf_dir }}/{{ _conf_cluster }}.conf"
+            src: "{{ barman_cluster_conf[_backup_attr] }}"
+            remote_src: true
+          vars:
+            _backup_attr: 'backup_file'
+          when: _backup_attr in barman_cluster_conf
+
+        - name: Fail cluster configuration
+          ansible.builtin.file:
+            msg: "barman configuration validation failed for server {{ _patroni_cluster_name }}"
+
+      always:
+        - name: Drop Barman cluster configuration backup
+          ansible.builtin.file:
+            path: "{{ barman_cluster_conf[_backup_attr] }}"
+            state: absent
+          vars:
+            _backup_attr: 'backup_file'
+          when: _backup_attr in barman_cluster_conf

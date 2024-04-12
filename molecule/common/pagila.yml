@@ -1,0 +1,66 @@
+---
+- name: Load Pagila DB
+  hosts: _patroni_cluster_master
+  become: true
+  tasks:
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
+    - name: Install zip package
+      ansible.builtin.package:
+        name: zip
+
+    - name: Create pagila DB
+      become_user: "{{ _postgresql_user }}"
+      block:
+        - name: Create tempdir
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: pagila
+          register: _pagila_tempdir
+
+        - name: Extract data files
+          ansible.builtin.unarchive:
+            src: https://ftp.postgresql.org/pub/projects/pgFoundry/dbsamples/pagila/pagila/pagila-0.10.1.zip
+            dest: "{{ _pagila_tempdir.path }}"
+            remote_src: true
+
+        - name: List sql files
+          ansible.builtin.find:
+            paths: "{{ _pagila_tempdir.path }}"
+            recurse: true
+            patterns: "*.sql"
+          register: _pagila_files
+
+        - name: Concatenate sql files
+          ansible.builtin.shell: >
+            cat {{ _schema | first }} {{ _data | first }} > {{ _pagila_tempdir.path }}/pagila.sql
+          vars:
+            _schema: "{{ _pagila_files.files | map(attribute='path') | select('match', '.*schema[.]sql') }}"
+            _data: "{{ _pagila_files.files | map(attribute='path') | select('match', '.*insert-data[.]sql') }}"
+          changed_when: false
+
+        - name: Create DB
+          community.postgresql.postgresql_db:
+            name: "{{ pagila_db | default('pagila') }}"
+            state: present
+            login_user: postgres
+            login_password: "{{ patroni_cluster_postgres_password }}"
+            login_host: 127.0.0.1
+
+        - name: Load DB data
+          community.postgresql.postgresql_db:
+            name: "{{ pagila_db | default('pagila') }}"
+            state: restore
+            login_user: postgres
+            login_password: "{{ patroni_cluster_postgres_password }}"
+            login_host: 127.0.0.1
+            target: "{{ _pagila_tempdir.path }}/pagila.sql"
+
+      always:
+        - name: Destroy tempdir
+          ansible.builtin.file:
+            path: "{{ _pagila_tempdir.path }}"
+            state: absent
