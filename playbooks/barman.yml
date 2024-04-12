@@ -127,7 +127,7 @@
         _conf_db_user: "{{ _patroni_cluster_barman_username }}"
         _conf_sshport: "{{ _patroni_haproxy_port_ssh_master_local }}"
         _conf_sshcmd: "ssh {{ _postgresql_user }}@localhost -p {{ _conf_sshport }} {{ _conf_sshopts }}"
-        _conf_sshopts: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+        _conf_sshopts: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
         _conf_backup_host: "127.0.0.1"
         _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
         _conf_extra: "{{ _patroni_barman_conf_cluster }}"
@@ -136,12 +136,12 @@
       ansible.builtin.command: "barman cron"
       become_user: "{{ _patroni_barman_user }}"
 
-    - name: Wait for Barman initialization
-      ansible.builtin.pause:
-        seconds: 60
-
     - name: Switch Barman wal
       ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
+      become_user: "{{ _patroni_barman_user }}"
+
+    - name: Initialize Barman backup
+      ansible.builtin.command: "barman cron"
       become_user: "{{ _patroni_barman_user }}"
 
     - name: Verify Barman cluster configuration

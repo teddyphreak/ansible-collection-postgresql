@@ -19,11 +19,13 @@
           - _patroni_cluster_api_password is defined
           - _patroni_cluster_replication_password is defined
           - _patroni_cluster_postgres_password is defined
+      tags: always
 
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
         tasks_from: vars.yml
+      tags: always
 
     - name: Stat PostgreSQL config file
       ansible.builtin.stat:
@@ -98,10 +100,12 @@
       ansible.builtin.template:
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_file }}"
+        validate: "patroni --validate-config %s"
         force: false
         owner: "{{ _postgresql_user }}"
         group: "{{ _postgresql_group }}"
         mode: 0640
+      tags: configure
       vars:
         _slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_size: "{{ _cluster_hosts | length }}"
@@ -226,3 +230,4 @@
       listen:
         - patroni_reload
         - postgresql_reload
+      tags: always

@@ -1,6 +1,7 @@
 ---
 - name: Set Patroni cluster facts
   hosts: "{{ _patroni_cluster_hostgroup }}"
+  tags: always
   vars_files:
     - main.yml
   tasks:
@@ -15,6 +16,7 @@
 - name: Query PostgreSQL cluster status
   hosts: "{{ _patroni_cluster_hostgroup }}"
   become: true
+  tags: always
   vars_files:
     - main.yml
   tasks:

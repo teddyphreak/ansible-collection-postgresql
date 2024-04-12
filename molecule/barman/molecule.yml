@@ -146,7 +146,7 @@ provisioner:
   playbooks:
     prepare: ../common/prepare.yml
     converge: ../common/install.yml
-    side_effect: ../common/barman.yml
+    side_effect: ../common/crash.yml
     verify: ../common/verify.yml
   inventory:
     hosts:

@@ -21,7 +21,7 @@ postgresql:
   config_dir: {{ _config_configdir }}
   bin_dir: {{ _config_bindir }}
   authentication:
-    postgres:
+    superuser:
       username: postgres
       password: {{ _config_postgres_password }}
     replication:
