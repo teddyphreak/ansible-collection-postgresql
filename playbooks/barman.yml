@@ -113,37 +113,46 @@
         _conf_backup_host: "127.0.0.1"
         _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
 
-    - name: Manage Barman cluster configuration
-      ansible.builtin.template:
-        src: "barman.cluster.conf.j2"
-        dest: "{{ _patroni_barman_conf_dir }}/{{ _conf_cluster }}.conf"
-        owner: "{{ _patroni_barman_user }}"
-        group: "{{ _patroni_barman_user }}"
-        mode: 0640
-      vars:
-        _conf_cluster: "{{ _patroni_cluster_name }}"
-        _conf_slot: "{{ _patroni_cluster_slot_barman }}"
-        _conf_bindir: "{{ _postgresql_bindir }}"
-        _conf_db_user: "{{ _patroni_cluster_barman_username }}"
-        _conf_sshport: "{{ _patroni_haproxy_port_ssh_master_local }}"
-        _conf_sshcmd: "ssh {{ _postgresql_user }}@localhost -p {{ _conf_sshport }} {{ _conf_sshopts }}"
-        _conf_sshopts: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
-        _conf_backup_host: "127.0.0.1"
-        _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
-        _conf_extra: "{{ _patroni_barman_conf_cluster }}"
+    - name: Update Barman cluster configuration
+      block:
+        - name: Manage Barman cluster configuration
+          ansible.builtin.template:
+            src: "barman.cluster.conf.j2"
+            dest: "{{ _patroni_barman_conf_dir }}/{{ _conf_cluster }}.conf"
+            owner: "{{ _patroni_barman_user }}"
+            group: "{{ _patroni_barman_user }}"
+            mode: 0640
+            backup: true
+          vars:
+            _conf_cluster: "{{ _patroni_cluster_name }}"
+            _conf_slot: "{{ _patroni_cluster_slot_barman }}"
+            _conf_bindir: "{{ _postgresql_bindir }}"
+            _conf_db_user: "{{ _patroni_cluster_barman_username }}"
+            _conf_sshport: "{{ _patroni_haproxy_port_ssh_master_local }}"
+            _conf_sshcmd: "ssh {{ _postgresql_user }}@localhost -p {{ _conf_sshport }} {{ _conf_sshopts }}"
+            _conf_sshopts: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
+            _conf_backup_host: "127.0.0.1"
+            _conf_backup_port: "{{ _patroni_haproxy_port_psql_master_local }}"
+            _conf_extra: "{{ _patroni_barman_conf_cluster }}"
+          register: barman_cluster_conf
 
-    - name: Initialize Barman backup
-      ansible.builtin.command: "barman cron"
-      become_user: "{{ _patroni_barman_user }}"
+        - debug:
+            var: barman_cluster_conf
 
-    - name: Switch Barman wal
-      ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
-      become_user: "{{ _patroni_barman_user }}"
+        - fail:
 
-    - name: Initialize Barman backup
-      ansible.builtin.command: "barman cron"
-      become_user: "{{ _patroni_barman_user }}"
+        - name: Initialize Barman backup
+          ansible.builtin.command: "barman cron"
+          become_user: "{{ _patroni_barman_user }}"
 
-    - name: Verify Barman cluster configuration
-      ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
-      become_user: "{{ _patroni_barman_user }}"
+        - name: Switch Barman wal
+          ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
+          become_user: "{{ _patroni_barman_user }}"
+
+        - name: Initialize Barman backup
+          ansible.builtin.command: "barman cron"
+          become_user: "{{ _patroni_barman_user }}"
+
+        - name: Verify Barman cluster backup configuration
+          ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
+          become_user: "{{ _patroni_barman_user }}"

@@ -1,0 +1,26 @@
+---
+- name: Import facts playbook
+  import_playbook: nephelaiio.patroni.facts
+
+# Load pagila database with name A
+- name: Load pagila database
+  import_playbook: ./pagila.yml
+  vars:
+    pagila_db: pagila
+
+# Ensure database backup is up to date
+
+# Crash database master
+- name: Crash cluster master
+  hosts: _patroni_cluster_master
+  become: true
+  tasks:
+    - name: Stop patroni service
+      ansible.builtin.service:
+        name: patroni
+        state: stopped
+
+    - name: Wait for cluster recovery
+      ansible.builtin.pause:
+        minutes: 1
+
