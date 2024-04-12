@@ -166,12 +166,17 @@ provisioner:
           patroni_watchdog_mode: off
           patroni_molecule_username: install
           patroni_molecule_password: molecule
-          patroni_molecule_database: test
+          patroni_molecule_database: seed
+          patroni_pagila_database: pagila
           patroni_cluster_roles:
             - name: "{{ patroni_molecule_username }}"
               password: "{{ patroni_molecule_password }}"
           patroni_cluster_databases:
             - name: "{{ patroni_molecule_database }}"
+              roles:
+                - name: "{{ patroni_molecule_username }}"
+                  privs: ALL
+            - name: "{{ patroni_pagila_database }}"
               roles:
                 - name: "{{ patroni_molecule_username }}"
                   privs: ALL

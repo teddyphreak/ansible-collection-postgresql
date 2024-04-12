@@ -1,7 +1,15 @@
 ---
+- name: Set cluster facts
+  ansible.builtin.import_playbook: nephelaiio.patroni.facts
+  vars:
+    patroni_bootstrap_allow: false
+
+
 - name: Load Pagila DB
-  hosts: _patroni_cluster_master
+  hosts: "{{ _patroni_barman_hostgroup }}"
   become: true
+  vars_files:
+    - ../../playbooks/vars/main.yml
   tasks:
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
@@ -42,20 +50,12 @@
             _data: "{{ _pagila_files.files | map(attribute='path') | select('match', '.*insert-data[.]sql') }}"
           changed_when: false
 
-        - name: Create DB
-          community.postgresql.postgresql_db:
-            name: "{{ pagila_db | default('pagila') }}"
-            state: present
-            login_user: postgres
-            login_password: "{{ patroni_cluster_postgres_password }}"
-            login_host: 127.0.0.1
-
         - name: Load DB data
           community.postgresql.postgresql_db:
-            name: "{{ pagila_db | default('pagila') }}"
+            name: "{{ pagila_db | default(patroni_molecule_database) }}"
             state: restore
-            login_user: postgres
-            login_password: "{{ patroni_cluster_postgres_password }}"
+            login_user: "{{ patroni_molecule_username }}"
+            login_password: "{{ patroni_molecule_password }}"
             login_host: 127.0.0.1
             target: "{{ _pagila_tempdir.path }}/pagila.sql"
 

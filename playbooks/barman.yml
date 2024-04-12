@@ -1,6 +1,8 @@
 ---
 - name: Set cluster facts
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
+  vars:
+    patroni_bootstrap_allow: false
 
 
 - name: Manage Barman users
@@ -35,6 +37,11 @@
     - name: Install PostgreSQL client packages
       ansible.builtin.package:
         name: "{{ _postgresql_package_client }}"
+
+    - name: Install yum package requirements
+      ansible.builtin.package:
+        name: openssh-clients
+      when: ansible_os_family == 'RedHat'
 
     - name: Install Barman package
       ansible.builtin.package:
@@ -85,7 +92,7 @@
     - name: Manage Barman server configuration
       ansible.builtin.template:
         src: "barman.main.conf.j2"
-        dest: /etc/barman.conf
+        dest: "{{ _patroni_barman_conf_file }}"
         owner: "{{ _patroni_barman_user }}"
         group: "{{ _patroni_barman_user }}"
         mode: 0640

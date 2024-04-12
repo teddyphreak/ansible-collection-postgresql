@@ -1,6 +1,8 @@
 ---
 - name: Set cluster facts
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
+  vars:
+    patroni_bootstrap_allow: false
 
 
 - name: Update Patroni HAProxy hosts

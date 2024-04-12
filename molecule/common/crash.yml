@@ -1,11 +1,13 @@
 ---
 - name: Import facts playbook
   import_playbook: nephelaiio.patroni.facts
+  vars:
+    patroni_bootstrap_allow: false
 
 - name: Load pagila database
   import_playbook: ./pagila.yml
   vars:
-    pagila_db: seed
+    pagila_db: "{{ patroni_molecule_database }}"
 
 
 - name: Crash cluster master
@@ -17,11 +19,11 @@
         name: patroni
         state: stopped
 
-    - name: Wait for cluster failover
+    - name: Wait for cluster crash failover
       ansible.builtin.pause:
         minutes: 1
 
-    - name: Stop patroni service
+    - name: Start patroni service
       ansible.builtin.service:
         name: patroni
         state: started
@@ -30,4 +32,4 @@
 - name: Load pagila database
   import_playbook: ./pagila.yml
   vars:
-    pagila_db: post
+    pagila_db: "{{ patroni_pagila_database }}"
