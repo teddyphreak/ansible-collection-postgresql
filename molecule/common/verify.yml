@@ -353,15 +353,11 @@
         _patroni_hosts: "{{ groups['patroni_cluster'] }}"
 
     - name: Verify Barman backup execution
-      ansible.builtin.command: "barman backup"
+      ansible.builtin.command: "barman backup {{ _patroni_cluster_name }}"
       become_user: "{{ _patroni_barman_user }}"
 
     - name: Verify Barman cron execution
       ansible.builtin.command: "barman cron"
-      become_user: "{{ _patroni_barman_user }}"
-
-    - name: Switch Barman wal
-      ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
       become_user: "{{ _patroni_barman_user }}"
 
     - name: Verify Barman cluster backup configuration
