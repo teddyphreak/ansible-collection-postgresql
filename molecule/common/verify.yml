@@ -352,6 +352,10 @@
         _ssh_port: "{{ _patroni_haproxy_port_ssh_master_local }}"
         _patroni_hosts: "{{ groups['patroni_cluster'] }}"
 
+    - name: Verify Barman backup execution
+      ansible.builtin.command: "barman backup"
+      become_user: "{{ _patroni_barman_user }}"
+
     - name: Verify Barman cron execution
       ansible.builtin.command: "barman cron"
       become_user: "{{ _patroni_barman_user }}"

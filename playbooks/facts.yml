@@ -68,18 +68,6 @@
       vars:
         _status: "{{ 'master' if _cluster_master else 'slave' }}"
 
-    - name: Debug cluster membership
-      ansible.builtin.debug:
-        msg: "Node is {{ 'alien' if _cluster_alien else ('master' if _cluster_master else 'slave') }}"
-
-    - name: Debug master group members
-      ansible.builtin.debug:
-        msg: "masters [{{ groups['_cluster_master'] | join(', ') }}]"
-
-    - name: Debug slave group members
-      ansible.builtin.debug:
-        msg: "slaves [{{ groups['_cluster_slave'] | join(', ') }}]"
-
     - name: Verify cluster status
       ansible.builtin.assert:
         that:

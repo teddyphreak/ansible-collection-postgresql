@@ -43,9 +43,11 @@
         name: openssh-clients
       when: ansible_os_family == 'RedHat'
 
-    - name: Install Barman package
+    - name: Install Barman packages
       ansible.builtin.package:
-        name: barman
+        name:
+          - barman
+          - rsync
 
     - name: Distribute SSH control public keys
       block:
@@ -89,6 +91,14 @@
         state: absent
       loop: "{{ _barman_cluster_templates.files | map(attribute='path') }}"
 
+    - name: Create Barman backup directory
+      ansible.builtin.file:
+        path: "{{ _patroni_barman_backup_dir }}"
+        state: directory
+        owner: "{{ _patroni_barman_user }}"
+        group: "{{ _patroni_barman_user }}"
+        mode: 0750
+
     - name: Manage Barman server configuration
       ansible.builtin.template:
         src: "barman.main.conf.j2"
@@ -100,7 +110,7 @@
         _conf_user: "{{ _patroni_barman_user }}"
         _conf_group: "{{ _patroni_barman_group }}"
         _conf_dir: "{{ _patroni_barman_conf_dir }}"
-        _conf_home: "{{ _patroni_barman_home }}"
+        _conf_home: "{{ _patroni_barman_backup_dir }}"
         _conf_log_file: "{{ _patroni_barman_conf_log_file }}"
         _conf_log_level: "{{ _patroni_barman_conf_log_level }}"
         _conf_bwlimit: "{{ _patroni_barman_conf_bwlimit }}"
@@ -143,21 +153,27 @@
             _conf_extra: "{{ _patroni_barman_conf_cluster }}"
           register: barman_cluster_conf
 
-        - name: Initialize Barman backup
-          ansible.builtin.command: "barman cron"
-          become_user: "{{ _patroni_barman_user }}"
+        - name: Verify Barman cluster configuration
+          block:
+            - name: Initialize Barman backup
+              ansible.builtin.command: "barman cron"
+              become_user: "{{ _patroni_barman_user }}"
 
-        - name: Switch Barman wal
-          ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
-          become_user: "{{ _patroni_barman_user }}"
+            - name: Verify Barman cluster backup configuration
+              ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
+              become_user: "{{ _patroni_barman_user }}"
+          rescue:
+            - name: Switch Barman wal
+              ansible.builtin.command: "barman switch-wal {{ _patroni_cluster_name }}"
+              become_user: "{{ _patroni_barman_user }}"
 
-        - name: Initialize Barman backup
-          ansible.builtin.command: "barman cron"
-          become_user: "{{ _patroni_barman_user }}"
+            - name: Reinitialize Barman cron
+              ansible.builtin.command: "barman cron"
+              become_user: "{{ _patroni_barman_user }}"
 
-        - name: Verify Barman cluster backup configuration
-          ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
-          become_user: "{{ _patroni_barman_user }}"
+            - name: Verify Barman cluster backup configuration
+              ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
+              become_user: "{{ _patroni_barman_user }}"
 
       rescue:
         - name: Restore Barman cluster configuration
@@ -181,3 +197,29 @@
           vars:
             _backup_attr: 'backup_file'
           when: _backup_attr in barman_cluster_conf
+
+    - name: Manage Barman cron cronjob
+      ansible.builtin.cron:
+        user: "{{ _patroni_barman_user }}"
+        name: "barman_cron"
+        job: "barman cron 2>&1 > {{ _patroni_barman_conf_log_file | dirname }}/cron.log"
+        minute: "{{ _crontab[0] }}"
+        hour: "{{ _crontab[1] }}"
+        day: "{{ _crontab[2] }}"
+        month: "{{ _crontab[3] }}"
+        weekday: "{{ _crontab[4] }}"
+      vars:
+        _crontab: "{{ _patroni_barman_cron_crontab | split(' ') }}"
+
+    - name: Manage Barman backup cronjob
+      ansible.builtin.cron:
+        user: "{{ _patroni_barman_user }}"
+        name: "barman_backup"
+        job: "barman backup 2>&1 > {{ _patroni_barman_conf_log_file | dirname }}/backup.log"
+        minute: "{{ _crontab[0] }}"
+        hour: "{{ _crontab[1] }}"
+        day: "{{ _crontab[2] }}"
+        month: "{{ _crontab[3] }}"
+        weekday: "{{ _crontab[4] }}"
+      vars:
+        _crontab: "{{ _patroni_barman_backup_crontab | split(' ') }}"

@@ -180,6 +180,7 @@ provisioner:
               roles:
                 - name: "{{ patroni_molecule_username }}"
                   privs: ALL
+          patroni_barman_backup_dir: /opt/barman
 verifier:
   name: ansible
 scenario:

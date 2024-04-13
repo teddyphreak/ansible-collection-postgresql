@@ -69,6 +69,9 @@ Cluster wide parameters
 | patroni_barman_conf_bwlimit          |                               0 | Barman bandwidth limit                       | false    |
 | patroni_barman_conf_include          |                              '' | Barman main configuration include snippet    | false    |
 | patroni_barman_conf_cluster          |                              '' | Barman cluster configuration include snippet | false    |
+| patroni_barman_cron_crontab          |                       * * * * * | Schedule for `barman cron` cronjob           | false    |
+| patroni_barman_backup_crontab        |                       0 0 * * * | Schedule for `barman backup` cronjob           | false    |
+| patroni_barman_backup_dir            |                 /var/lib/barman | Barman backup directory                      | false    |
 
 where <node_object> follows the following json schema
 
