@@ -45,9 +45,7 @@
 
     - name: Install Barman packages
       ansible.builtin.package:
-        name:
-          - barman
-          - rsync
+        name: barman
 
     - name: Distribute SSH control public keys
       block:

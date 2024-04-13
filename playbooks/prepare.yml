@@ -27,11 +27,14 @@
           - yum-utils
           - python3-dnf-plugin-versionlock
           - acl
+          - rsync
       when: ansible_os_family == 'RedHat'
 
     - name: Install apt prerequisites
       ansible.builtin.package:
-        name: acl
+        name:
+          - acl
+          - rsync
       when: ansible_os_family == 'Debian'
 
 

@@ -353,12 +353,25 @@
         _patroni_hosts: "{{ groups['patroni_cluster'] }}"
 
     - name: Verify Barman backup execution
-      ansible.builtin.command: "barman backup {{ _patroni_cluster_name }}"
+      ansible.builtin.command: "barman backup {{ _patroni_cluster_name }} --wait"
       become_user: "{{ _patroni_barman_user }}"
 
     - name: Verify Barman cron execution
       ansible.builtin.command: "barman cron"
       become_user: "{{ _patroni_barman_user }}"
+
+    - name: Query Barman backup status
+      ansible.builtin.command: "barman -f json list-backups {{ _patroni_cluster_name }}"
+      register: _barman_backup_status
+
+    - name: Verify Barman backup status
+      ansible.builtin.assert:
+        that:
+          - _barman_backup_list | length > 0
+          - barman_backup_list[0].status == 'DONE'
+      vars:
+        _barman_backup_data: "{{ _barman_backup_status.stdout | from_json }}"
+        _barman_backup_list: "{{ _barman_backup_data[_patroni_cluster_name] }}"
 
     - name: Verify Barman cluster backup configuration
       ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
