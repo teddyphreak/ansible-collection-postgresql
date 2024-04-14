@@ -129,6 +129,7 @@ provisioner:
   config_options:
     defaults:
       remote_tmp: /tmp
+      allow_world_readable_tmpfiles: true
       callbacks_enabled: ansible.posix.profile_tasks
   playbooks:
     prepare: ../common/prepare.yml
@@ -138,7 +139,8 @@ provisioner:
     hosts:
       all:
         vars:
-          postgresql_nolog: false
+          patroni_nolog: false
+          postgresql_nolog: "{{ patroni_nolog | bool }}"
           patroni_config_hostnames: false
           patroni_consul_backuppath: /backup
           patroni_cluster_name: molecule
@@ -146,6 +148,7 @@ provisioner:
           patroni_cluster_postgres_password: molecule
           patroni_cluster_replication_password: molecule
           patroni_cluster_rewind_password: molecule
+          patroni_cluster_barman_password: molecule
           patroni_watchdog_enable: false
           patroni_watchdog_mode: off
           patroni_molecule_username: install

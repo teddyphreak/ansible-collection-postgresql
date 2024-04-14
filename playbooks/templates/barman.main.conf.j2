@@ -1,0 +1,33 @@
+{{ ansible_managed | comment(decoration='; ') }}
+
+; Barman, Backup and Recovery Manager for PostgreSQL
+; http://www.pgbarman.org/ - http://www.enterprisedb.com/
+;
+; Main configuration file
+
+[barman]
+barman_user = {{ _conf_user }}
+
+; Directory of configuration files. Place your sections in separate files with .conf extension
+; For example place the 'main' server section in /etc/barman.d/main.conf
+configuration_files_directory = {{ _conf_dir }}
+
+; Main directory
+barman_home = {{ _conf_home }}
+
+; Log location
+log_file = {{ _conf_log_file }}
+
+; Log level (see https://docs.python.org/3/library/logging.html#levels)
+log_level = {{ _conf_log_level }}
+
+; Default compression level: possible values are None (default), bzip2, gzip, pigz, pygzip or pybzip2
+compression = {{ _conf_compression }}
+
+; Global bandwidth limit in kilobytes per second - default 0 (meaning no limit)
+bandwidth_limit = {{ _conf_bwlimit }}
+
+{% if _conf_extra != '' %}
+; Custom user configuration
+{{ _conf_extra }}
+{% endif %}

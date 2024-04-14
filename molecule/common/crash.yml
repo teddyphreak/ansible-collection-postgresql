@@ -1,0 +1,35 @@
+---
+- name: Import facts playbook
+  import_playbook: nephelaiio.patroni.facts
+  vars:
+    patroni_bootstrap_allow: false
+
+- name: Populate molecule database
+  import_playbook: ./pagila.yml
+  vars:
+    pagila_db: "{{ patroni_molecule_database }}"
+
+
+- name: Crash cluster master
+  hosts: _patroni_cluster_master
+  become: true
+  tasks:
+    - name: Stop patroni service
+      ansible.builtin.service:
+        name: patroni
+        state: stopped
+
+    - name: Wait for cluster crash failover
+      ansible.builtin.pause:
+        minutes: 1
+
+    - name: Start patroni service
+      ansible.builtin.service:
+        name: patroni
+        state: started
+
+
+- name: Populate pagila database
+  import_playbook: ./pagila.yml
+  vars:
+    pagila_db: "{{ patroni_pagila_database }}"

@@ -1,6 +1,8 @@
 ---
 - name: Set cluster facts
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
+  vars:
+    patroni_bootstrap_allow: false
 
 
 - name: Update Patroni HAProxy hosts
@@ -49,7 +51,7 @@
 
     - name: Verify replica liveness
       ansible.builtin.uri:
-        url: "http://localhost:8008/liveness"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET
@@ -57,7 +59,7 @@
 
     - name: Verify replica status
       ansible.builtin.uri:
-        url: "http://localhost:8008/replica"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/replica"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET
@@ -73,7 +75,7 @@
 
     - name: Verify replica status
       ansible.builtin.uri:
-        url: "http://localhost:8008/replica?lag={{ _maxlag }}"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/replica?lag={{ _maxlag }}"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET
@@ -116,7 +118,7 @@
 
     - name: Verify primary liveness
       ansible.builtin.uri:
-        url: "http://localhost:8008/liveness"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET
@@ -125,7 +127,7 @@
 
     - name: Verify primary status
       ansible.builtin.uri:
-        url: "http://localhost:8008/primary"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/primary"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET
@@ -134,7 +136,7 @@
 
     - name: Switchover cluster role
       ansible.builtin.uri:
-        url: "http://localhost:8008/switchover"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/switchover"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: POST
@@ -146,7 +148,7 @@
 
     - name: Verify replica status
       ansible.builtin.uri:
-        url: "http://localhost:8008/replica?lag={{ _maxlag }}"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/replica?lag={{ _maxlag }}"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET
@@ -168,7 +170,7 @@
 
     - name: Verify replica status
       ansible.builtin.uri:
-        url: "http://localhost:8008/replica?lag={{ _maxlag }}"
+        url: "http://localhost:{{ _patroni_cluster_port_restapi }}/replica?lag={{ _maxlag }}"
         user: "{{ _api_username }}"
         password: "{{ _api_password }}"
         method: GET

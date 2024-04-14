@@ -19,11 +19,13 @@
           - _patroni_cluster_api_password is defined
           - _patroni_cluster_replication_password is defined
           - _patroni_cluster_postgres_password is defined
+      tags: always
 
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
         name: nephelaiio.patroni.postgresql
         tasks_from: vars.yml
+      tags: always
 
     - name: Stat PostgreSQL config file
       ansible.builtin.stat:
@@ -40,7 +42,7 @@
           vars:
             _format: "uniq | sort -r | head -1 | xargs"
             _release: "{{ _patroni_release_postgresql }}"
-          loop: "{{ [_postgresql_package_name] | flatten }}"
+          loop: "{{ [_postgresql_package_all] | flatten }}"
           register: _postgresql_versions
           changed_when: false
 
@@ -48,9 +50,11 @@
           ansible.builtin.include_role:
             name: nephelaiio.patroni.postgresql
           vars:
+            _map_join: "nephelaiio.plugins.map_join"
             _results: "{{ _postgresql_versions.results }}"
-            postgresql_conf_main_file: "{{ _postgresql_conf_main_query.stat.exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
-            postgresql_package_name: "{{ _results | map('nephelaiio.plugins.map_join', ['item', 'stdout'], '=') }}"
+            _conf_exists: "{{ _postgresql_conf_main_query.stat.exists }}"
+            postgresql_conf_main_file: "{{ _conf_exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
+            postgresql_package_name: "{{ _results | map(_map_join, ['item', 'stdout'], '=') }}"
 
     - name: Deploy PostgreSQL RedHat packages
       when: ansible_os_family == "RedHat"
@@ -61,7 +65,7 @@
           vars:
             _format: "awk -v OFS='=' '{ print $1,$2 }' | sed -E 's/[.][^=]+//' | tail -1 | xargs"
             _release: "{{ _patroni_release_postgresql }}"
-          loop: "{{ [_postgresql_package_name] | flatten }}"
+          loop: "{{ [_postgresql_package_all] | flatten }}"
           register: _postgres_versions
           changed_when: false
 
@@ -69,7 +73,8 @@
           ansible.builtin.include_role:
             name: nephelaiio.patroni.postgresql
           vars:
-            postgresql_conf_main_file: "{{ _postgresql_conf_main_query.stat.exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
+            _conf_exists: "{{ _postgresql_conf_main_query.stat.exists }}"
+            postgresql_conf_main_file: "{{ _conf_exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
             postgresql_package_name: "{{ _postgres_versions.results | map(attribute='stdout') }}"
 
     - name: Install Patroni
@@ -91,28 +96,34 @@
         - config.yml.in
         - dcs.yml
 
-    - name: Bootstrap live cluster configuration
+    - name: Bootstrap cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_file }}"
+        validate: "patroni --validate-config %s"
         force: false
         owner: "{{ _postgresql_user }}"
         group: "{{ _postgresql_group }}"
         mode: 0640
+      tags: configure
       vars:
         _slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_size: "{{ _cluster_hosts | length }}"
         _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] }}"
-        _cluster_slots: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
+        _cluster_slot_data: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
+        _cluster_slots: "{{ _cluster_slot_data | community.general.dict }}"
+        _barman_slot_data: "[ {{ [_patroni_cluster_slot_barman] | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
+        _barman_slots: "{{ _barman_slot_data | community.general.dict }}"
         _config_cluster_name: "{{ _patroni_cluster_name }}"
+        _config_port_psql: "{{ _patroni_cluster_port_psql }}"
+        _config_port_restapi: "{{ _patroni_cluster_port_restapi }}"
         _config_datadir: "{{ _postgresql_datadir }}"
         _config_socketdir: "{{ _postgresql_socketdir }}"
         _config_host_name: "{{ ansible_hostname }}"
         _config_configdir: "{{ _postgresql_confdir }}"
         _config_bindir: "{{ _postgresql_bindir }}"
         _config_address: "{{ ansible_default_ipv4.address }}"
-        _config_slots: "{{ _cluster_slots | community.general.dict | to_nice_yaml(indent=2) }}"
-        _config_synchronous_node_count: "{{ _cluster_size | int - 2 }}"
+        _config_slots: "{{ _cluster_slots | combine(_barman_slots) | to_nice_yaml(indent=2) }}"
         _config_api_username: "{{ _patroni_cluster_api_username }}"
         _config_api_password: "{{ _patroni_cluster_api_password }}"
         _config_postgres_password: "{{ _patroni_cluster_postgres_password }}"
@@ -160,7 +171,7 @@
 
         - name: Verify primary liveness
           ansible.builtin.uri:
-            url: "http://localhost:8008/liveness"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -171,7 +182,7 @@
 
         - name: Verify primary status
           ansible.builtin.uri:
-            url: "http://localhost:8008/primary"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/primary"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -191,7 +202,7 @@
 
         - name: Verify replica liveness
           ansible.builtin.uri:
-            url: "http://localhost:8008/liveness"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -202,7 +213,7 @@
 
         - name: Verify replica status
           ansible.builtin.uri:
-            url: "http://localhost:8008/replica"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/replica"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -219,3 +230,4 @@
       listen:
         - patroni_reload
         - postgresql_reload
+      tags: always

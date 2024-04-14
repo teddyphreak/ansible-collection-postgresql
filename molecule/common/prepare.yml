@@ -21,3 +21,21 @@
     - name: Install virtualenv
       ansible.builtin.package:
         name: virtualenv
+
+    - name: Install ssh server
+      ansible.builtin.package:
+        name: openssh-server
+
+    - name: Start ssh service
+      ansible.builtin.service:
+        name: "{{ _service }}"
+        state: started
+      vars:
+        _service: "{{ (ansible_os_family == 'Debian') | ternary('ssh', 'sshd') }}"
+
+    - name: Install deb utilities
+      ansible.builtin.package:
+        name:
+          - "netcat-openbsd"
+          - "curl"
+      when: ansible_os_family == "Debian"

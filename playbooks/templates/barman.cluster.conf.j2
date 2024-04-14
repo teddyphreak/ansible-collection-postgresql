@@ -1,0 +1,20 @@
+{{ ansible_managed | comment(decoration='; ') }}
+
+[{{ _conf_cluster }}]
+active = true
+description =  "Patroni {{ _conf_cluster }} cluster"
+path_prefix = {{ _conf_bindir }}
+ssh_command = {{ _conf_sshcmd }}
+conninfo = host={{ _conf_backup_host }} port={{ _conf_backup_port }} user={{ _conf_db_user }} dbname=postgres
+streaming_conninfo = host={{ _conf_backup_host }} port={{ _conf_backup_port }} user={{ _conf_db_user }} dbname=replication
+archiver = off
+streaming_archiver = on
+create_slot = auto
+slot_name = {{ _conf_slot }}
+backup_method = rsync
+reuse_backup = link
+backup_options = concurrent_backup
+{% if _conf_extra != '' %}
+; Custom user configuration
+{{ _conf_extra }}
+{% endif %}

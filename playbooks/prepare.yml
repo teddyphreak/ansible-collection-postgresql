@@ -27,31 +27,17 @@
           - yum-utils
           - python3-dnf-plugin-versionlock
           - acl
+          - rsync
+          - cronie
       when: ansible_os_family == 'RedHat'
 
     - name: Install apt prerequisites
       ansible.builtin.package:
-        name: acl
+        name:
+          - acl
+          - rsync
+          - cron
       when: ansible_os_family == 'Debian'
-
-
-- name: Prepare Patroni Consul hosts
-  hosts:
-    - "{{ _patroni_consul_hostgroup }}"
-    - "{{ _patroni_cluster_hostgroup }}"
-  become: true
-  vars_files:
-    - main.yml
-  tasks:
-    - name: Install cron for Debian derivatives
-      ansible.builtin.package:
-        name: cron
-      when: ansible_os_family == "Debian"
-
-    - name: Install cron for RedHat derivatives
-      ansible.builtin.package:
-        name: cronie
-      when: ansible_os_family == "RedHat"
 
 
 - name: Prepare Patroni PostgreSQL hosts

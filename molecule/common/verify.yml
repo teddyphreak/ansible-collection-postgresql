@@ -5,7 +5,8 @@
   vars_files:
     - ../../playbooks/vars/main.yml
   vars:
-    _service: "{{ _patroni_cluster_service_name }}{{ (ansible_os_family == 'RedHat') | ternary('.service', '') }}"
+    _suffix: "{{ (ansible_os_family == 'RedHat') | ternary('.service', '') }}"
+    _service: "{{ _patroni_cluster_service_name }}{{ _suffix }}"
   tasks:
     - name: Set PostgreSQL facts
       ansible.builtin.include_role:
@@ -38,9 +39,21 @@
         filter:
           - "databases"
           - "roles"
+          - "repl_slots"
       become: true
       become_user: "{{ _postgresql_user }}"
       register: postgresql_info
+
+    - name: Verify requested replication slots
+      ansible.builtin.assert:
+        that: _missing_slots | length == 0
+        fail_msg: |
+          Unable to find replication slots [{{ _missing_slots | join(',') }}]
+        success_msg: "Existing slots are [{{ _existing_slots | join(',') }}]"
+      vars:
+        _expected_slots: ['barman']
+        _existing_slots: "{{ postgresql_info.repl_slots.keys() }}"
+        _missing_slots: "{{ _expected_slots | difference(_existing_slots) }}"
 
     - name: Verify requested databases
       ansible.builtin.assert:
@@ -116,7 +129,7 @@
 
         - name: Verify member liveness
           ansible.builtin.uri:
-            url: "http://localhost:8008/liveness"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/liveness"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -125,7 +138,7 @@
 
         - name: Query cluster status
           ansible.builtin.uri:
-            url: "http://localhost:8008/cluster"
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/cluster"
             user: "{{ _api_username }}"
             password: "{{ _api_password }}"
             method: GET
@@ -238,7 +251,7 @@
       changed_when: false
 
 
-- name: Verify HaProxy deployment
+- name: Verify HAProxy deployment
   hosts: patroni_haproxy
   any_errors_fatal: true
   vars_files:
@@ -274,22 +287,22 @@
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5432
+            port: "{{ _patroni_haproxy_port_psql_master_local }}"
 
-        - name: Verify master role
+        - name: Query master role
           community.postgresql.postgresql_query:
             query: "SELECT pg_is_in_recovery()"
             db: postgres
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5432
-          retries: 10
-          delay: 30
-          register: _slave_query
-          until:
-            - _slave_query is succeeded
-            - not _slave_query.query_result[0].pg_is_in_recovery
+            port: "{{ _patroni_haproxy_port_psql_master_local }}"
+          register: _master_query
+
+        - name: Verify master role
+          ansible.builtin.assert:
+            that: not _master_query.query_result[0].pg_is_in_recovery
+            fail_msg: "Master query result was {{ _master_query.query_result }}"
 
         - name: Test slave connectivity
           community.postgresql.postgresql_info:
@@ -299,19 +312,66 @@
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5433
+            port: "{{ _patroni_haproxy_port_psql_slave_local }}"
 
-        - name: Query slave proxy endpoint
+        - name: Query slave role
           community.postgresql.postgresql_query:
             query: "SELECT pg_is_in_recovery()"
             db: postgres
             login_host: 127.0.0.1
             login_user: "{{ patroni_molecule_username }}"
             login_password: "{{ patroni_molecule_password }}"
-            port: 5433
-          retries: 10
-          delay: 30
+            port: "{{ _patroni_haproxy_port_psql_slave_local }}"
           register: _slave_query
-          until:
-            - _slave_query is succeeded
-            - _slave_query.query_result[0].pg_is_in_recovery
+
+        - name: Verify slave role
+          ansible.builtin.assert:
+            that: _slave_query.query_result[0].pg_is_in_recovery
+            fail_msg: "Slave query result was {{ _slave_query.query_result }}"
+
+
+- name: Verify Barman deployment
+  hosts: patroni_barman
+  any_errors_fatal: true
+  become: true
+  become_user: "{{ _patroni_barman_user }}"
+  vars_files:
+    - ../../playbooks/vars/main.yml
+  tasks:
+    - name: Test direct ssh connectivity to Patroni cluster members
+      ansible.builtin.command: "ssh postgres@{{ item.0 }} {{ _ssh_options }} hostname"
+      vars:
+        _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
+        _patroni_hosts: "{{ groups['patroni_cluster'] }}"
+      loop_control:
+        label: "{{ item.1 }}"
+      loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"
+
+    - name: Test haproxy ssh connectivity to Patroni cluster master
+      ansible.builtin.command: "ssh postgres@127.0.0.1 {{ _ssh_options }} -p {{ _ssh_port }} hostname"
+      vars:
+        _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
+        _ssh_port: "{{ _patroni_haproxy_port_ssh_master_local }}"
+        _patroni_hosts: "{{ groups['patroni_cluster'] }}"
+
+    - name: Verify Barman cron execution
+      ansible.builtin.command: "barman cron"
+
+    - name: Verify Barman backup execution
+      ansible.builtin.command: "barman backup {{ _patroni_cluster_name }} --wait"
+
+    - name: Query Barman backup status
+      ansible.builtin.command: "barman -f json list-backups {{ _patroni_cluster_name }}"
+      register: _barman_backup_status
+
+    - name: Verify Barman backup status
+      ansible.builtin.assert:
+        that:
+          - _barman_backup_list | length > 0
+          - _barman_backup_list[0].status == 'DONE'
+      vars:
+        _barman_backup_data: "{{ _barman_backup_status.stdout | from_json }}"
+        _barman_backup_list: "{{ _barman_backup_data[_patroni_cluster_name] }}"
+
+    - name: Verify Barman cluster backup configuration
+      ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"

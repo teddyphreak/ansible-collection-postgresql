@@ -67,7 +67,7 @@
 
     - name: List cached images
       ansible.builtin.find:
-        paths: "{{ _libvirt_pool }}"
+        paths: "{{ _libvirt_path }}"
         recurse: false
       register: _cache_query
 
@@ -77,7 +77,7 @@
       vars:
         _cached_images: "{{ _cache_query.files | map(attribute='path') }}"
         _basename: "{{ item | urlsplit('path') | basename }}"
-        _path: "{{ _libvirt_pool }}/{{ _basename }}"
+        _path: "{{ _libvirt_path }}/{{ _basename }}"
       loop: "{{ molecule_yml.platforms | map(attribute='image') | unique }}"
       when: _path not in _cached_images
 

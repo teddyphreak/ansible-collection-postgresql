@@ -61,10 +61,17 @@ platforms:
     memory: 2
     groups:
       - patroni_haproxy
+  - name: patroni-update-barman-01
+    image: "${MOLECULE_KVM_IMAGE}"
+    cpu: 1
+    memory: 4
+    groups:
+      - patroni_barman
 provisioner:
   name: ansible
   config_options:
     defaults:
+      allow_world_readable_tmpfiles: true
       callbacks_enabled: ansible.posix.profile_tasks
   playbooks:
     create: ../common/create.yml
@@ -78,7 +85,8 @@ provisioner:
     hosts:
       all:
         vars:
-          postgresql_nolog: false
+          patroni_nolog: false
+          postgresql_nolog: "{{ patroni_nolog | bool }}"
           patroni_config_hostnames: false
           patroni_consul_backuppath: /backup
           patroni_cluster_name: molecule
@@ -86,6 +94,7 @@ provisioner:
           patroni_cluster_postgres_password: molecule
           patroni_cluster_replication_password: molecule
           patroni_cluster_rewind_password: molecule
+          patroni_cluster_barman_password: molecule
           patroni_watchdog_enable: false
           patroni_watchdog_mode: off
 verifier:
