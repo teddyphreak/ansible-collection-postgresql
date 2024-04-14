@@ -333,10 +333,12 @@
 - name: Verify Barman deployment
   hosts: patroni_barman
   any_errors_fatal: true
+  become: true
+  become_user: "{{ _patroni_barman_user }}"
   vars_files:
     - ../../playbooks/vars/main.yml
   tasks:
-    - name: Test ssh connectivity to Patroni cluster members
+    - name: Test direct ssh connectivity to Patroni cluster members
       ansible.builtin.command: "ssh postgres@{{ item.0 }} {{ _ssh_options }} hostname"
       vars:
         _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
@@ -345,7 +347,7 @@
         label: "{{ item.1 }}"
       loop: "{{ _patroni_hosts | map('extract', hostvars, _patroni_addrkeys) | zip(_patroni_hosts) }}"
 
-    - name: Test ssh connectivity to Patroni cluster master
+    - name: Test haproxy ssh connectivity to Patroni cluster master
       ansible.builtin.command: "ssh postgres@127.0.0.1 {{ _ssh_options }} -p {{ _ssh_port }} hostname"
       vars:
         _ssh_options: "-o StrictHostKeyChecking=no -i ~{{ _patroni_barman_user }}/.ssh/id_rsa"
@@ -354,11 +356,9 @@
 
     - name: Verify Barman cron execution
       ansible.builtin.command: "barman cron"
-      become_user: "{{ _patroni_barman_user }}"
 
     - name: Verify Barman backup execution
       ansible.builtin.command: "barman backup {{ _patroni_cluster_name }} --wait"
-      become_user: "{{ _patroni_barman_user }}"
 
     - name: Query Barman backup status
       ansible.builtin.command: "barman -f json list-backups {{ _patroni_cluster_name }}"
@@ -375,4 +375,3 @@
 
     - name: Verify Barman cluster backup configuration
       ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
-      become_user: "{{ _patroni_barman_user }}"
