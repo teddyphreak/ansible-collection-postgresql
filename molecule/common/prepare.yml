@@ -36,6 +36,6 @@
     - name: Install deb utilities
       ansible.builtin.package:
         name:
-          - "netcat"
+          - "netcat-openbsd"
           - "curl"
       when: ansible_os_family == "Debian"
