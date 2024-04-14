@@ -142,6 +142,7 @@ provisioner:
   config_options:
     defaults:
       remote_tmp: /tmp
+      allow_world_readable_tmpfiles: true
       callbacks_enabled: ansible.posix.profile_tasks
   playbooks:
     prepare: ../common/prepare.yml
