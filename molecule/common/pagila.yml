@@ -15,7 +15,6 @@
         name: zip
 
     - name: Create pagila DB
-      become_user: "{{ _postgresql_user }}"
       block:
         - name: Create tempdir
           ansible.builtin.tempfile:
