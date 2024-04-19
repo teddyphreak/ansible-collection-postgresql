@@ -6,6 +6,7 @@
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
 ## ToDo
+
 * Overwrite Patroni configuration
 * Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
@@ -21,7 +22,7 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 | patroni_cluster_group     |    'patroni_cluster' | Patroni DBMS hosts                                        |
 | patroni_consul_group      |     'patroni_consul' | Patroni Consul Distibuted Configuration Store (DCS) hosts |
 | patroni_barman_group      |     'patroni_barman' | Patroni Barman hosts                                      |
-| patroni_haproxy_group     |    'patroni_haproxy' | Patroni HAProxy hosts                                      |
+| patroni_haproxy_group     |    'patroni_haproxy' | Patroni HAProxy hosts                                     |
 | patroni_update_skip_group | 'patroni_update_skip | Patroni update exclude hosts                              |
 
 ## Collection variables
