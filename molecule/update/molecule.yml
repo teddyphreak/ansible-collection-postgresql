@@ -95,8 +95,6 @@ provisioner:
           patroni_cluster_replication_password: molecule
           patroni_cluster_rewind_password: molecule
           patroni_cluster_barman_password: molecule
-          patroni_watchdog_enable: false
-          patroni_watchdog_mode: off
 verifier:
   name: ansible
 scenario:

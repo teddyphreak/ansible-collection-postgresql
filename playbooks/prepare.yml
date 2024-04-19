@@ -62,4 +62,4 @@
             persistent: present
 
         - name: Set watchdog permissions
-          ansible.builtin.command: "chown {{ _postgresql_user }}:{{ _postresql_group }} /dev/watchdog"
+          ansible.builtin.command: "chown {{ _postgresql_user }}:{{ _postgresql_group }} /dev/watchdog"
