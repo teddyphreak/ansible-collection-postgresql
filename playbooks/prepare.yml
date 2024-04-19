@@ -8,6 +8,8 @@
   become: true
   vars_files:
     - main.yml
+  roles:
+    - nephelaiio.patroni.pgdg
   tasks:
     - name: Add host entries for cluster members
       ansible.builtin.lineinfile:
@@ -46,6 +48,11 @@
   vars_files:
     - main.yml
   tasks:
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
     - name: Configure watchdog support
       when: _patroni_watchdog_enable | bool
       block:
