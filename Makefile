@@ -43,15 +43,15 @@ requirements: install
 build: requirements
 	@poetry run ansible-galaxy collection build --force
 
-dependency create prepare converge idempotence side-effect verify destroy cleanup login reset list:
+dependency create prepare converge idempotence side-effect verify destroy cleanup reset list:
 	MOLECULE_KVM_IMAGE=${MOLECULE_KVM_IMAGE} \
 	MOLECULE_DOCKER_COMMAND=${MOLECULE_DOCKER_COMMAND} \
 	MOLECULE_DOCKER_IMAGE=${MOLECULE_DOCKER_IMAGE} \
 	poetry run molecule $@ -s ${MOLECULE_SCENARIO}
 
 ifeq (login,$(firstword $(MAKECMDGOALS)))
-	LOGIN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
-	$(eval $(AIDER_ARGS):;@:)
+    LOGIN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+    $(eval $(subst $(space),,$(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))):;@:)
 endif
 
 login:
