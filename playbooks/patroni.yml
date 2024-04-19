@@ -77,6 +77,17 @@
             postgresql_conf_main_file: "{{ _conf_exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
             postgresql_package_name: "{{ _postgres_versions.results | map(attribute='stdout') }}"
 
+    - name: Configure watchdog support
+      when: _patroni_watchdog_enable | bool
+      block:
+        - name: Load watchdog module
+          community.general.modprobe:
+            name: softdog
+            persistent: present
+
+        - name: Set watchdog permissions
+          ansible.builtin.command: "chown {{ _postgresql_user }}:{{ _postgresql_group }} /dev/watchdog"
+
     - name: Install Patroni
       ansible.builtin.package:
         name:
