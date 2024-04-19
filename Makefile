@@ -52,6 +52,7 @@ dependency create prepare converge idempotence side-effect verify destroy cleanu
 ifeq (login,$(firstword $(MAKECMDGOALS)))
 	LOGIN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 	$(eval $(AIDER_ARGS):;@:)
+endif
 
 login:
 	MOLECULE_KVM_IMAGE=${MOLECULE_KVM_IMAGE} \
