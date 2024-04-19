@@ -150,6 +150,7 @@ _patroni_hostkeys: ['name', 'address']
 _patroni_haproxy_config_file: "/etc/haproxy/haproxy.cfg"
 _patroni_haproxy_user: "haproxy"
 _patroni_haproxy_group: "haproxy"
+_patroni_haproxy_listen_addr: "{{ patroni_haproxy_listen_addr | default('*') }}"
 _patroni_haproxy_maxconn: "{{ patroni_haproxy_maxconn | default(1000) }}"
 _patroni_haproxy_addrattrs: "{{ _patroni_config_hostnames | ternary('ansible_fqdn', _patroni_addrkeys) }}"
 _patroni_haproxy_hostaddrs: "{{ _patroni_cluster_nodes |
