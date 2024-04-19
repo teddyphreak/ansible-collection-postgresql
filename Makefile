@@ -49,6 +49,16 @@ dependency create prepare converge idempotence side-effect verify destroy cleanu
 	MOLECULE_DOCKER_IMAGE=${MOLECULE_DOCKER_IMAGE} \
 	poetry run molecule $@ -s ${MOLECULE_SCENARIO}
 
+ifeq (login,$(firstword $(MAKECMDGOALS)))
+	LOGIN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
+	$(eval $(AIDER_ARGS):;@:)
+
+login:
+	MOLECULE_KVM_IMAGE=${MOLECULE_KVM_IMAGE} \
+	MOLECULE_DOCKER_COMMAND=${MOLECULE_DOCKER_COMMAND} \
+	MOLECULE_DOCKER_IMAGE=${MOLECULE_DOCKER_IMAGE} \
+	poetry run molecule $@ -s ${MOLECULE_SCENARIO} ${LOGIN_ARGS}
+
 ignore:
 	@poetry run ansible-lint --generate-ignore
 
