@@ -47,7 +47,7 @@
         _conf_port_restapi: "{{ _patroni_cluster_port_restapi }}"
         _conf_check_auth: "{{ _restapi_auth | b64encode }}"
         _conf_socket: "{{ (ansible_os_family == 'Debian' | bool) | ternary(_socket_debian, _socket_redhat) }}"
-        _conf_addr: "127.0.0.1"
+        _conf_addr: "{{ _patroni_haproxy_listen_addr }}"
         _conf_user: "haproxy"
         _conf_group: "haproxy"
         _conf_maxconn: "{{ _patroni_haproxy_maxconn }}"

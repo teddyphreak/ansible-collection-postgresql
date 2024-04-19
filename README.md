@@ -6,6 +6,7 @@
 An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/patroni/) to install and manage [Patroni](https://patroni.readthedocs.io/en/latest/README.html) clusters
 
 ## ToDo
+
 * Overwrite Patroni configuration
 * Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
@@ -21,7 +22,7 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 | patroni_cluster_group     |    'patroni_cluster' | Patroni DBMS hosts                                        |
 | patroni_consul_group      |     'patroni_consul' | Patroni Consul Distibuted Configuration Store (DCS) hosts |
 | patroni_barman_group      |     'patroni_barman' | Patroni Barman hosts                                      |
-| patroni_haproxy_group     |    'patroni_haproxy' | Patroni HAProxy hosts                                      |
+| patroni_haproxy_group     |    'patroni_haproxy' | Patroni HAProxy hosts                                     |
 | patroni_update_skip_group | 'patroni_update_skip | Patroni update exclude hosts                              |
 
 ## Collection variables
@@ -61,6 +62,7 @@ Cluster wide parameters
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component            | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component            | false    |
 | patroni_consul_backup_days           |                            '\*' | Consul snapshot cronjob component            | false    |
+| patroni_haproxy_listen_addr          |                            '\*' | HAProxy listen address                       | false    |
 | patroni_haproxy_maxconn              |                            1000 | HAProxy max connections settings             | false    |
 | patroni_barman_user                  |                          barman | Barman user                                  | false    |
 | patroni_barman_group                 |                          barman | Barman group                                 | false    |
@@ -70,7 +72,7 @@ Cluster wide parameters
 | patroni_barman_conf_include          |                              '' | Barman main configuration include snippet    | false    |
 | patroni_barman_conf_cluster          |                              '' | Barman cluster configuration include snippet | false    |
 | patroni_barman_cron_crontab          |                       * * * * * | Schedule for `barman cron` cronjob           | false    |
-| patroni_barman_backup_crontab        |                       0 0 * * * | Schedule for `barman backup` cronjob           | false    |
+| patroni_barman_backup_crontab        |                       0 0 * * * | Schedule for `barman backup` cronjob         | false    |
 | patroni_barman_backup_dir            |                 /var/lib/barman | Barman backup directory                      | false    |
 
 where <node_object> follows the following json schema
