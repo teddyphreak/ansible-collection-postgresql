@@ -53,7 +53,7 @@ Cluster wide parameters
 | patroni_cluster_start_timeout        |                              60 | Patroni cluster max member start timeout     | false    |
 | patroni_cluster_hba                  |                              [] | Patroni cluster hba objects                  | false    |
 | patroni_watchdog_enable              |                            true | Enable watchdog module                       | false    |
-| patroni_watchdog_mode                |                        required | Patroni watchdog mode                        | false    |
+| patroni_watchdog_mode                |                       automatic | Patroni watchdog mode                        | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration      | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                       | false    |
 | patroni_consul_backup_path           |               '/backups/consul' | Consul snapshot backup path                  | false    |

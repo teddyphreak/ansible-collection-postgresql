@@ -22,7 +22,7 @@ _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_repl
 _patroni_config_locale: "{{ postgresql_locale }}"
 
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
-_patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('required', 'off') }}"
+_patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('automatic', 'off') }}"
 
 _patroni_cluster_port_psql: 5432
 _patroni_cluster_port_restapi: 8008
