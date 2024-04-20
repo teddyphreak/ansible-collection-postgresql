@@ -11,6 +11,8 @@ restapi:
     password: {{ _config_api_password }}
 consul:
   host: 127.0.0.1:8500
+watchdog:
+  mode: "{{ _config_watchdog_mode }}"
 postgresql:
   use_unix_socket: true
   listen: 0.0.0.0:{{ _config_port_psql }}

@@ -77,6 +77,17 @@
             postgresql_conf_main_file: "{{ _conf_exists | ternary('postgresql.base.conf', 'postgresql.conf') }}"
             postgresql_package_name: "{{ _postgres_versions.results | map(attribute='stdout') }}"
 
+    - name: Configure watchdog support
+      when: _patroni_watchdog_enable | bool
+      block:
+        - name: Load watchdog module
+          community.general.modprobe:
+            name: softdog
+            persistent: present
+
+        - name: Set watchdog permissions
+          ansible.builtin.command: "chown {{ _postgresql_user }}:{{ _postgresql_group }} /dev/watchdog"
+
     - name: Install Patroni
       ansible.builtin.package:
         name:
@@ -109,7 +120,7 @@
       vars:
         _slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_size: "{{ _cluster_hosts | length }}"
-        _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] | map('regex_replace', '-', '_') }}"
+        _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] }}"
         _cluster_slot_data: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
         _cluster_slots: "{{ _cluster_slot_data | community.general.dict }}"
         _barman_slot_data: "[ {{ [_patroni_cluster_slot_barman] | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
@@ -131,6 +142,7 @@
         _config_replication_password: "{{ _patroni_cluster_replication_password }}"
         _config_rewind_username: "{{ _patroni_cluster_rewind_username }}"
         _config_rewind_password: "{{ _patroni_cluster_rewind_password }}"
+        _config_watchdog_mode: "{{ _patroni_watchdog_mode }}"
         _config_encoding: "{{ _patroni_config_encoding }}"
         _config_locale: "{{ _patroni_config_locale }}"
         _config_maxlag_failover: "{{ _patroni_cluster_maxlag_failover }}"

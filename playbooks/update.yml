@@ -142,7 +142,7 @@
         method: POST
         body_format: json
         body:
-          leader: "{{ groups['_patroni_cluster_slave'] | first }}"
+          leader: "{{ inventory_hostname }}"
         status_code: 200
         timeout: 3
 
