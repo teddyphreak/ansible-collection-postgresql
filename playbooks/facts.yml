@@ -5,9 +5,14 @@
   vars_files:
     - main.yml
   tasks:
+    - name: Set PostgreSQL facts
+      ansible.builtin.include_role:
+        name: nephelaiio.patroni.postgresql
+        tasks_from: vars.yml
+
     - name: Set cluster address facts
       ansible.builtin.set_fact:
-        postgresql_cluster_address: "{{ _hostname if (patroni_config_hostnames | bool) else _address }}"
+        postgresql_cluster_address: "{{ _hostname if (_patroni_config_hostnames | bool) else _address }}"
       vars:
         _hostname: "{{ inventory_hostname }}"
         _address: "{{ ansible_default_ipv4.address }}"
