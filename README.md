@@ -7,12 +7,12 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 
 ## ToDo
 
-* Overwrite Patroni configuration
 * Refactor Consul playbooks into independent collection
 * Refactor all collections with Consul deployments to pull from Consul collection
 * Add slave cluster bootstrap option
 * Add slave cluster test scenario
 * Test dataplane integration
+* Add pgbench performance testing
 * Add PGCat deployment to install playbook
 
 ## Collection hostgroups
@@ -54,6 +54,7 @@ Cluster wide parameters
 | patroni_cluster_hba                  |                              [] | Patroni cluster hba objects                  | false    |
 | patroni_watchdog_enable              |                            true | Enable watchdog module                       | false    |
 | patroni_watchdog_mode                |                       automatic | Patroni watchdog mode                        | false    |
+| patroni_config_overwrite             |                           false | Force Patroni configuration overwrite        | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration      | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                       | false    |
 | patroni_consul_backup_path           |               '/backups/consul' | Consul snapshot backup path                  | false    |
@@ -113,7 +114,8 @@ Please make sure your environment has [docker](https://www.docker.com) installed
 Role is tested against the following distributions (docker images):
 
   * Ubuntu Jammy
-  * Ubuntu Focal
+  * Debian 12
+  * Rocky Linux 9
 
 You can test the collection directly from sources using command `make test`
 

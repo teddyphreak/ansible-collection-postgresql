@@ -17,6 +17,7 @@ _patroni_release_postgresql: "{{ patroni_release_postgresql | default(patroni_de
 _patroni_release_patroni: "{{ patroni_release_postgresql | default(patroni_defaults_release_patroni) }}"
 _patroni_release_consul: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
 
+_patroni_config_overwrite: "{{ patroni_config_overwrite | default(True) | bool }}"
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) | bool }}"
 _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
 _patroni_config_locale: "{{ postgresql_locale }}"
