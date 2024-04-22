@@ -112,7 +112,7 @@
         src: "patroni.yml.j2"
         dest: "{{ _patroni_cluster_config_file }}"
         validate: "patroni --validate-config %s"
-        force: false
+        force: "{{ _patroni_config_overwrite }}"
         owner: "{{ _postgresql_user }}"
         group: "{{ _postgresql_group }}"
         mode: 0640
