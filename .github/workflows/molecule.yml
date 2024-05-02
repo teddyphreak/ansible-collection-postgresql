@@ -74,14 +74,4 @@ jobs:
           MOLECULE_DOCKER_IMAGE: ${{ matrix.image.name }}
           MOLECULE_DOCKER_COMMAND: ${{ matrix.image.command }}
           MOLECULE_SCENARIO: ${{ matrix.scenario }}
-          MOLECULE_OUTPUT_DIR: /tmp/logs
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Upload install logs
-        uses: actions/upload-artifact@v3
-        with:
-          name: install-logs
-          path: |
-            /tmp/logs/*
-          if-no-files-found: ignore
-        if: always()
