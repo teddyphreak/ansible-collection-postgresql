@@ -38,8 +38,6 @@ jobs:
           - databases
           - barman
         image:
-          - name: ubuntu2404
-            command: /lib/systemd/systemd
           - name: ubuntu2204
             command: /lib/systemd/systemd
           - name: debian12
