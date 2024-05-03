@@ -7,8 +7,6 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 
 ## ToDo
 
-* Refactor Consul playbooks into independent collection
-* Refactor all collections with Consul deployments to pull from Consul collection
 * Add slave cluster bootstrap option
 * Add slave cluster test scenario
 * Test dataplane integration
@@ -114,6 +112,7 @@ Please make sure your environment has [docker](https://www.docker.com) installed
 Role is tested against the following distributions (docker images):
 
   * Ubuntu Jammy
+  * Ubuntu Focal
   * Debian 12
   * Rocky Linux 9
 
