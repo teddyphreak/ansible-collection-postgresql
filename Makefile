@@ -1,4 +1,4 @@
-.PHONY: all ${MAKECMDGOALS}
+.PHONY: ${MAKECMDGOALS}
 
 MOLECULE_SCENARIO ?= install
 MOLECULE_DOCKER_IMAGE ?= ubuntu2204
@@ -18,7 +18,10 @@ COLLECTION_VERSION = $$(yq '.version' < galaxy.yml)
 all: install version lint test
 
 test: lint
-	poetry run molecule test -s ${MOLECULE_SCENARIO}
+	MOLECULE_KVM_IMAGE=${MOLECULE_KVM_IMAGE} \
+	MOLECULE_DOCKER_COMMAND=${MOLECULE_DOCKER_COMMAND} \
+	MOLECULE_DOCKER_IMAGE=${MOLECULE_DOCKER_IMAGE} \
+	poetry run molecule $@ -s ${MOLECULE_SCENARIO}
 
 install:
 	@type poetry >/dev/null || pip3 install poetry
