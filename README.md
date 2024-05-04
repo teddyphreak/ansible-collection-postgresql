@@ -55,8 +55,6 @@ Cluster wide parameters
 | patroni_config_overwrite             |                           false | Force Patroni configuration overwrite        | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration      | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                       | false    |
-| patroni_consul_backup_path           |               '/backups/consul' | Consul snapshot backup path                  | false    |
-| patroni_consul_backup_bin            | '/usr/local/bin/consul-snapshot | Consul snapshot backup script location       | false    |
 | patroni_consul_backup_retention      |                            1440 | Consul snapshot retention in minutes         | false    |
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component            | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component            | false    |
