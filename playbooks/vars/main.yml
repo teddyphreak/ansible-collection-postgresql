@@ -134,8 +134,7 @@ _patroni_cluster_hba_base:
     address: "0.0.0.0/0"
     auth_method: md5
 
-consul_config_hostnames: "{{ _patroni_consul_hostnames }}"
-consul_group: "{{ patroni_consul_group | default('patroni_consul') }}"
+consul_group: "{{ patroni_consul_group | default('patroni_consul') }}:{{ _patroni_cluster_hostgroup }}"
 consul_update_skip_group: "{{ _patroni_update_skip_hostgroup }}"
 consul_release: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
 consul_datacenter_name: "{{ patroni_consul_datacenter | default('patroni') }}"
@@ -145,6 +144,8 @@ consul_backup_hours: "{{ patroni_consul_backup_period | default('*') }}"
 consul_backup_days: "{{ patroni_consul_backup_period | default('*') }}"
 consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
 consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
+consul_role: "{{ 'server' if inventory_hostname in consul_group else 'client' }}"
+
 consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"
 
 _patroni_addrkeys: ['ansible_default_ipv4', 'address']
