@@ -181,3 +181,7 @@
         _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
       retries: 30
       delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+
+
+- name: Update Consul cluster
+  ansible.builtin.import_playbook: pokerops.consul.update

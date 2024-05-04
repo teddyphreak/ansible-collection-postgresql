@@ -135,7 +135,8 @@ _patroni_cluster_hba_base:
     auth_method: md5
 
 consul_config_hostnames: "{{ _patroni_consul_hostnames }}"
-consul_hostgroup: "{{ patroni_consul_group | default('patroni_consul') }}"
+consul_group: "{{ patroni_consul_group | default('patroni_consul') }}"
+consul_update_skip_group: "{{ _patroni_update_skip_hostgroup }}"
 consul_release: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
 consul_datacenter_name: "{{ patroni_consul_datacenter | default('patroni') }}"
 consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
