@@ -8,7 +8,7 @@
 
 
 - name: Deploy Consul cluster
-  ansible.builtin.import_playbook: pokerops.consul.install
+  ansible.builtin.import_playbook: nephelaiio.consul.install
 
 
 - name: Deploy PostgreSQL cluster

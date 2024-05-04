@@ -5,4 +5,4 @@ collections:
     source: .
     type: dir
   - name: nephelaiio.plugins
-  - name: pokerops.consul
+  - name: nephelaiio.consul
