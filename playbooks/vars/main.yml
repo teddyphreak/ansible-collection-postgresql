@@ -141,7 +141,6 @@ consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }
 consul_backup_minutes: "{{ patroni_consul_backup_period | default('*/5') }}"
 consul_backup_hours: "{{ patroni_consul_backup_period | default('*') }}"
 consul_backup_days: "{{ patroni_consul_backup_period | default('*') }}"
-consul_install_from_repo: true
 
 _patroni_addrkeys: ['ansible_default_ipv4', 'address']
 _patroni_hostkeys: ['name', 'address']
