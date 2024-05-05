@@ -4,7 +4,7 @@
     - "{{ _patroni_cluster_hostgroup }}"
     - "{{ _patroni_barman_hostgroup }}"
     - "{{ _patroni_haproxy_hostgroup }}"
-    - "{{ consul_group }}"
+    - "{{ consul_group_name }}"
   become: true
   vars_files:
     - main.yml

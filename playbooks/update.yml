@@ -186,5 +186,5 @@
 - name: Update Consul cluster
   ansible.builtin.import_playbook: nephelaiio.consul.update
   vars:
-    consul_group: "{{ patroni_consul_group | default('patroni_consul') }}"
+    consul_group_name: "{{ patroni_consul_group | default('patroni_consul') }}"
     consul_update_skip_group: "{{ _patroni_update_skip_hostgroup }}"
