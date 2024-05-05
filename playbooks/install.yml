@@ -10,8 +10,15 @@
 - name: Deploy Consul cluster
   ansible.builtin.import_playbook: nephelaiio.consul.install
   vars:
-    consul_group: "{{ patroni_consul_group | default('patroni_consul') }}:{{ _patroni_cluster_hostgroup }}"
-    consul_update_skip_group: "{{ _patroni_update_skip_hostgroup }}:{{ _patroni_cluster_hostgroup }}"
+    consul_group: "{{ patroni_consul_group | default('patroni_consul') }}"
+    consul_role: server
+
+
+- name: Deploy Consul cluster
+  ansible.builtin.import_playbook: nephelaiio.consul.install
+  vars:
+    consul_group: "{{ _patroni_cluster_hostgroup }}"
+    consul_role: client
 
 
 - name: Deploy PostgreSQL cluster
