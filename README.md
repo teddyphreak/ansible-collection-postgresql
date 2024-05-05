@@ -7,8 +7,6 @@ An [ansible collection](https://galaxy.ansible.com/ui/repo/published/nephelaiio/
 
 ## ToDo
 
-* Refactor Consul playbooks into independent collection
-* Refactor all collections with Consul deployments to pull from Consul collection
 * Add slave cluster bootstrap option
 * Add slave cluster test scenario
 * Test dataplane integration
@@ -57,8 +55,6 @@ Cluster wide parameters
 | patroni_config_overwrite             |                           false | Force Patroni configuration overwrite        | false    |
 | patroni_config_hostnames             |                            true | Use hostnames for Patroni configuration      | false    |
 | patroni_consul_datacenter            |                       'patroni' | Consul Datacenter name                       | false    |
-| patroni_consul_backup_path           |               '/backups/consul' | Consul snapshot backup path                  | false    |
-| patroni_consul_backup_bin            | '/usr/local/bin/consul-snapshot | Consul snapshot backup script location       | false    |
 | patroni_consul_backup_retention      |                            1440 | Consul snapshot retention in minutes         | false    |
 | patroni_consul_backup_minutes        |                          '\*/5' | Consul snapshot cronjob component            | false    |
 | patroni_consul_backup_hours          |                            '\*' | Consul snapshot cronjob component            | false    |
@@ -114,6 +110,7 @@ Please make sure your environment has [docker](https://www.docker.com) installed
 Role is tested against the following distributions (docker images):
 
   * Ubuntu Jammy
+  * Ubuntu Focal
   * Debian 12
   * Rocky Linux 9
 

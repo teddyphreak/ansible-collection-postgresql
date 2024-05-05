@@ -10,12 +10,10 @@ _patroni_nolog: "{{ patroni_nolog | default(True) }}"
 _patroni_cluster_hostgroup: "{{ patroni_cluster_group | default('patroni_cluster') }}"
 _patroni_barman_hostgroup: "{{ patroni_barman_group | default('patroni_barman') }}"
 _patroni_update_skip_hostgroup: "{{ patroni_update_skip_group | default('patroni_update_skip') }}"
-_patroni_consul_hostgroup: "{{ patroni_consul_group | default('patroni_consul') }}"
 _patroni_haproxy_hostgroup: "{{ patroni_haproxy_group | default('patroni_haproxy') }}"
 
 _patroni_release_postgresql: "{{ patroni_release_postgresql | default(patroni_defaults_release_postgresql) }}"
 _patroni_release_patroni: "{{ patroni_release_postgresql | default(patroni_defaults_release_patroni) }}"
-_patroni_release_consul: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
 
 _patroni_config_overwrite: "{{ patroni_config_overwrite | default(True) | bool }}"
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) | bool }}"
@@ -136,14 +134,13 @@ _patroni_cluster_hba_base:
     address: "0.0.0.0/0"
     auth_method: md5
 
-_patroni_consul_datacenter: "{{ patroni_consul_datacenter | default('patroni') }}"
-_patroni_consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
-_patroni_consul_backup_minutes: "{{ patroni_consul_backup_period | default('*/5') }}"
-_patroni_consul_backup_hours: "{{ patroni_consul_backup_period | default('*') }}"
-_patroni_consul_backup_days: "{{ patroni_consul_backup_period | default('*') }}"
-_patroni_consul_backup_path: "{{ patroni_consul_backup_path | default('/backups/consul') }}"
-_patroni_consul_backup_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-backup') }}"
-_patroni_consul_restore_bin: "{{ patroni_consul_backup_bin | default('/usr/local/bin/consul-restore') }}"
+consul_group_name: "{{ patroni_consul_group | default('patroni_consul') }}"
+consul_release: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
+consul_datacenter_name: "{{ patroni_consul_datacenter | default('patroni') }}"
+consul_backup_retention: "{{ patroni_consul_backup_retention | default('1440') }}"
+consul_backup_minutes: "{{ patroni_consul_backup_period | default('*/5') }}"
+consul_backup_hours: "{{ patroni_consul_backup_period | default('*') }}"
+consul_backup_days: "{{ patroni_consul_backup_period | default('*') }}"
 
 _patroni_addrkeys: ['ansible_default_ipv4', 'address']
 _patroni_hostkeys: ['name', 'address']

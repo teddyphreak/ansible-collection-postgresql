@@ -10,7 +10,6 @@ jobs:
   molecule:
     name: molecule
     runs-on: ubuntu-latest
-    needs: version
     strategy:
       matrix:
         scenario:
