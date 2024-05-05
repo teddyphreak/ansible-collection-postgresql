@@ -120,7 +120,7 @@
       vars:
         _slot: "[ '%s', { 'type': 'physical' } ]"
         _cluster_size: "{{ _cluster_hosts | length }}"
-        _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] | map('extract', hostvars, ['ansible_inventory_hostname_short']) }}"
+        _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] | map('split', '.') | map('first') }}"
         _cluster_slot_data: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
         _cluster_slots: "{{ _cluster_slot_data | community.general.dict }}"
         _barman_slot_data: "[ {{ [_patroni_cluster_slot_barman] | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
