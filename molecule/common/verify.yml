@@ -165,6 +165,37 @@
             _members: "{{ _cluster_status_query.json.members }}"
             _status: "{{ _members | selectattr('name', 'equalto', inventory_hostname) | first }}"
 
+    - name: Verify cluster extensions
+      block:
+        - name: Query registered extensions
+          community.postgresql.postgresql_query:
+            query: "SELECT extname FROM pg_extension"
+            db: postgres
+          become: true
+          become_user: postgres
+          register: _extension_query
+
+        - name: Set extension facts
+          ansible.builtin.set_fact:
+            _registered_extensions: "{{ _registered }}"
+            _missing_extensions: "{{ _missing }}"
+          vars:
+            _registered: "{{ _extension_query.query_result | map(attribute='extname') }}"
+            _expected:
+              - pgaudit
+            _missing: "{{ _expected | difference(_registered) }}"
+
+        - name: Verify registered extensions
+          block:
+            - name: Check registrations
+              ansible.builtin.assert:
+                that: _missing_extensions | length == 0
+
+          rescue:
+            - name: Debug failed extensions
+              ansible.builtin.fail:
+                msg: "Unable to find extensions [{{ ', '.join(_missing_extensions) }}]"
+
     - name: Verify Consul cluster status
       block:
         - name: Query Consul node cluster status
@@ -375,34 +406,3 @@
 
     - name: Verify Barman cluster backup configuration
       ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
-
-    - name: Verify registered extensions
-      block:
-        - name: Query registered extensions
-          community.postgresql.postgresql_query:
-            query: "SELECT extname FROM pg_extension"
-            db: postgres
-          become: true
-          become_user: postgres
-          register: _extension_query
-
-        - name: Set extension facts
-          ansible.builtin.set_fact:
-            _registered_extensions: "{{ _registered }}"
-            _missing_extensions: "{{ _missing }}"
-          vars:
-            _registered: "{{ _extension_query.query_result | map(attribute='extname') }}"
-            _expected:
-              - pgaudit
-            _missing: "{{ _expected | difference(_registered) }}"
-
-        - name: Verify registered extensions
-          block:
-            - name: Check registrations
-              ansible.builtin.assert:
-                that: _missing_extensions | length == 0
-
-          rescue:
-            - name: Debug failed extensions
-              ansible.builtin.fail:
-                msg: "Unable to find extensions [{{ ', '.join(_missing_extensions) }}]"

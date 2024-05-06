@@ -19,6 +19,11 @@ _patroni_config_overwrite: "{{ patroni_config_overwrite | default(True) | bool }
 _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) | bool }}"
 _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
 _patroni_config_locale: "{{ postgresql_locale }}"
+_patroni_config_pgaudit: 10-pgaudit.conf
+_patroni_config_pgcron: 20-pgcron.conf
+_patroni_config_pgstat_statements: 30-pgstat_statements.conf
+_patroni_config_local: 70-local.conf
+_patroni_config_ansible: 90-ansible.conf
 
 _patroni_watchdog_enable: "{{ patroni_watchdog_enable | default(True) }}"
 _patroni_watchdog_mode: "{{ _patroni_watchdog_enable | bool | ternary('automatic', 'off') }}"
@@ -139,27 +144,27 @@ _patroni_cluster_extensions:
     enabled: "{{ _patroni_cluster_pgaudit_enable }}"
 
 _patroni_cluster_pgaudit_enable: "{{ patroni_cluster_pgadmin_enable | default(True) }}"
-_patroni_cluster_pgaudit_log: 'ALL'
-_patroni_cluster_pgaudit_log_catalog: 'off'
-_patroni_cluster_pgaudit_log_client: 'off'
-_patroni_cluster_pgaudit_log_level: 'log'
-_patroni_cluster_pgaudit_log_parameter: 'off'
-_patroni_cluster_pgaudit_log_parameter_max_size: 0
-_patroni_cluster_pgaudit_log_relation: 'off'
-_patroni_cluster_pgaudit_log_rows: 'off'
-_patroni_cluster_pgaudit_log_statement: 'on'
-_patroni_cluster_pgaudit_log_statement_once: 'off'
+_patroni_cluster_pgaudit_log: "{{ patorni_cluster_pgadmin_log | defaut('ALL') }}"
+_patroni_cluster_pgaudit_log_catalog: "{{ patroni_cluster_pgadmin_log_catalog | default('off') }}"
+_patroni_cluster_pgaudit_log_client: "{{ patroni_cluster_pgadmin_log_client | default('off') }}"
+_patroni_cluster_pgaudit_log_level: "{{ patroni_cluster_pgadmin_log_level | default('log') }}"
+_patroni_cluster_pgaudit_log_parameter: "{{ patroni_cluster_pgadmin_log_parameter | default('off') }}"
+_patroni_cluster_pgaudit_log_parameter_max_size: "{{ patroni_cluster_pgadmin_log_parameter_max_size | default(0) }}"
+_patroni_cluster_pgaudit_log_relation: "{{ patroni_cluster_pgadmin_log_relation | default('off') }}"
+_patroni_cluster_pgaudit_log_rows: "{{ patroni_cluster_pgadmin_log_rows | default('off') }}"
+_patroni_cluster_pgaudit_log_statement: "{{ patroni_cluster_pgadmin_log_statement | default('on') }}"
+_patroni_cluster_pgaudit_log_statement_once: "{{ patroni_cluster_pgadmin_log_statement_once | default('off') }}"
 _patroni_cluster_pgaudit_config: |
   pgaudit.log = 'ALL'
-  pgaudit.log_catalog = '{{ postgresql_conf_pgaudit_log_catalog }}'
-  pgaudit.log_clent = '{{ postgresql_conf_pgaudit_log_client }}'
-  pgaudit.log_level = '{{ postgresql_conf_pgaudit_log_level }}'
-  pgaudit.log_parameter = '{{ postgresql_conf_pgaudit_log_parameter }}'
-  pgaudit.log_parameter_max_size = {{ postgresql_conf_pgaudit_log_parameter_max_size }}
-  pgaudit.log_relation = '{{ postgresql_conf_pgaudit_log_relation }}'
-  pgaudit.log_rows = '{{ postgresql_conf_pgaudit_log_rows }}'
-  pgaudit.log_statement = '{{ postgresql_conf_pgaudit_log_statement }}'
-  pgaudit.log_statement_once = '{{ postgresql_conf_pgaudit_log_statement_once }}'
+  pgaudit.log_catalog = '{{ _patroni_cluster_pgaudit_log_catalog }}'
+  pgaudit.log_clent = '{{ _patroni_cluster_pgaudit_log_client }}'
+  pgaudit.log_level = '{{ _patroni_cluster_pgaudit_log_level }}'
+  pgaudit.log_parameter = '{{ _patroni_cluster_pgaudit_log_parameter }}'
+  pgaudit.log_parameter_max_size = {{ _patroni_cluster_pgaudit_log_parameter_max_size }}
+  pgaudit.log_relation = '{{ _patroni_cluster_pgaudit_log_relation }}'
+  pgaudit.log_rows = '{{ _patroni_cluster_pgaudit_log_rows }}'
+  pgaudit.log_statement = '{{ _patroni_cluster_pgaudit_log_statement }}'
+  pgaudit.log_statement_once = '{{ _patroni_cluster_pgaudit_log_statement_once }}'
 
 consul_group_name: "{{ patroni_consul_group | default('patroni_consul') }}"
 consul_release: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"

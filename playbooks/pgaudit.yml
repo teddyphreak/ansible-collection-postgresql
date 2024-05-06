@@ -1,8 +1,12 @@
 ---
-- name: Manage pgaudit extension
+- name: Deploy Patroni cluster members
+  hosts: _patroni_cluster_master
+  any_errors_fatal: true
   become: true
-  block:
-    - name: Unconfigure PostgreSQL pgaudit extention
+  vars_files:
+    - main.yml
+  tasks:
+    - name: Unregister PostgreSQL pgaudit extension
       when: not (_patroni_cluster_pgaudit_enable | bool)
       block:
         - name: Disable pgaudit extension
@@ -13,25 +17,35 @@
 
         - name: Destroy PostgreSQL pgaudit config
           ansible.builtin.file:
-            path: "{{ _postgresql_conf_include }}/{{ _postgresql_conf_pgaudit }}"
+            path: "{{ _postgresql_conf_include }}/{{ _patroni_config_pgaudit }}"
             state: absent
           when: not (_patroni_cluster_pgaudit_enable | bool)
           notify: postgresql_reload
 
-    - name: Configure PostgreSQL pgaudit extention
+    - name: Register PostgreSQL pgaudit extension
       when: _patroni_cluster_pgaudit_enable | bool
       block:
         - name: Manage PostgreSQL pgaudit include config
           ansible.builtin.copy:
-            path: "{{ _postgresql_conf_include }}/{{ _postgresql_conf_pgaudit }}"
+            dest: "{{ _postgresql_conf_include }}/{{ _patroni_config_pgaudit }}"
             content: "{{ _patroni_cluster_pgaudit_config }}"
             owner: "{{ _postgresql_user }}"
             group: "{{ _postgresql_group }}"
             mode: 0644
-          notify: postgresql_reload
+          notify: patroni_reload
 
         - name: Enable pgaudit extension
           community.postgresql.postgresql_query:
             query: "CREATE EXTENSION IF NOT EXISTS pgaudit"
             db: postgres
           become_user: "{{ _postgresql_user }}"
+
+  handlers:
+    - name: Reload Patroni
+      ansible.builtin.service:
+        name: "{{ _patroni_cluster_service_name }}"
+        state: reloaded
+      listen:
+        - patroni_reload
+        - postgresql_reload
+      tags: always
