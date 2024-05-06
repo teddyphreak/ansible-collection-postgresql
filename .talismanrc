@@ -23,8 +23,6 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: playbooks/templates/patroni.yml.j2
     ignore_detectors: [filecontent]
-  - filename: playbooks/templates/postgresql.conf.j2
-    ignore_detectors: [filename]
   - filename: playbooks/haproxy.yml
     ignore_detectors: [filecontent]
   - filename: playbooks/update.yml
