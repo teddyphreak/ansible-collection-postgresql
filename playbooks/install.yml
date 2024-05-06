@@ -27,6 +27,10 @@
   ansible.builtin.import_playbook: nephelaiio.patroni.patroni
 
 
+- name: Deploy pgaudit extension
+  ansible.builtin.import_playbook: nephelaiio.patroni.pgaudit
+
+
 - name: Deploy Barman nodes
   ansible.builtin.import_playbook: nephelaiio.patroni.barman
 

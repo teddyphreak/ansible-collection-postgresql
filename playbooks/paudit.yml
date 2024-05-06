@@ -1,0 +1,37 @@
+---
+- name: Manage pgaudit extension
+  become: true
+  block:
+    - name: Unconfigure PostgreSQL pgaudit extention
+      when: not (_patroni_cluster_pgaudit_enable | bool)
+      block:
+        - name: Disable pgaudit extension
+          community.postgresql.postgresql_query:
+            query: "DROP EXTENSION IF EXISTS pgaudit"
+            db: postgres
+          become_user: "{{ _postgresql_user }}"
+
+        - name: Destroy PostgreSQL pgaudit config
+          ansible.builtin.file:
+            path: "{{ _postgresql_conf_include }}/{{ _postgresql_conf_pgaudit }}"
+            state: absent
+          when: not (_patroni_cluster_pgaudit_enable | bool)
+          notify: postgresql_reload
+
+    - name: Configure PostgreSQL pgaudit extention
+      when: _patroni_cluster_pgaudit_enable | bool
+      block:
+        - name: Manage PostgreSQL pgaudit include config
+          ansible.builtin.copy:
+            path: "{{ _postgresql_conf_include }}/{{ _postgresql_conf_pgaudit }}"
+            content: "{{ _patroni_cluster_pgaudit_config }}"
+            owner: "{{ _postgresql_user }}"
+            group: "{{ _postgresql_group }}"
+            mode: 0644
+          notify: postgresql_reload
+
+        - name: Enable pgaudit extension
+          community.postgresql.postgresql_query:
+            query: "CREATE EXTENSION IF NOT EXISTS pgaudit"
+            db: postgres
+          become_user: "{{ _postgresql_user }}"

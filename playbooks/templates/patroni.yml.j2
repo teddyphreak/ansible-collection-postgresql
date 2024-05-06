@@ -20,6 +20,8 @@ postgresql:
   data_dir: {{ _config_datadir }}
   config_dir: {{ _config_configdir }}
   bin_dir: {{ _config_bindir }}
+  parameters:
+    shared_preload_libraries: "{{ _config_libraries }}"
   authentication:
     superuser:
       username: postgres

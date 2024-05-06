@@ -134,6 +134,33 @@ _patroni_cluster_hba_base:
     address: "0.0.0.0/0"
     auth_method: md5
 
+_patroni_cluster_extensions:
+  - name: pgaudit
+    enabled: "{{ _patroni_cluster_pgaudit_enable }}"
+
+_patroni_cluster_pgaudit_enable: "{{ patroni_cluster_pgadmin_enable | default(True) }}"
+_patroni_cluster_pgaudit_log: 'ALL'
+_patroni_cluster_pgaudit_log_catalog: 'off'
+_patroni_cluster_pgaudit_log_client: 'off'
+_patroni_cluster_pgaudit_log_level: 'log'
+_patroni_cluster_pgaudit_log_parameter: 'off'
+_patroni_cluster_pgaudit_log_parameter_max_size: 0
+_patroni_cluster_pgaudit_log_relation: 'off'
+_patroni_cluster_pgaudit_log_rows: 'off'
+_patroni_cluster_pgaudit_log_statement: 'on'
+_patroni_cluster_pgaudit_log_statement_once: 'off'
+_patroni_cluster_pgaudit_config: |
+  pgaudit.log = 'ALL'
+  pgaudit.log_catalog = '{{ postgresql_conf_pgaudit_log_catalog }}'
+  pgaudit.log_clent = '{{ postgresql_conf_pgaudit_log_client }}'
+  pgaudit.log_level = '{{ postgresql_conf_pgaudit_log_level }}'
+  pgaudit.log_parameter = '{{ postgresql_conf_pgaudit_log_parameter }}'
+  pgaudit.log_parameter_max_size = {{ postgresql_conf_pgaudit_log_parameter_max_size }}
+  pgaudit.log_relation = '{{ postgresql_conf_pgaudit_log_relation }}'
+  pgaudit.log_rows = '{{ postgresql_conf_pgaudit_log_rows }}'
+  pgaudit.log_statement = '{{ postgresql_conf_pgaudit_log_statement }}'
+  pgaudit.log_statement_once = '{{ postgresql_conf_pgaudit_log_statement_once }}'
+
 consul_group_name: "{{ patroni_consul_group | default('patroni_consul') }}"
 consul_release: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"
 consul_datacenter_name: "{{ patroni_consul_datacenter | default('patroni') }}"
