@@ -20,8 +20,8 @@ _patroni_config_hostnames: "{{ patroni_config_hostnames | default(True) | bool }
 _patroni_config_encoding: "{{ postgresql_locale | split('.') | last | regex_replace('-', '') }}"
 _patroni_config_locale: "{{ postgresql_locale }}"
 _patroni_config_pgaudit: 10-pgaudit.conf
-_patroni_config_pgcron: 20-pgcron.conf
-_patroni_config_pgstat_statements: 30-pgstat_statements.conf
+_patroni_config_pg_cron: 20-pg_cron.conf
+_patroni_config_pg_stat_statements: 30-pg_stat_statements.conf
 _patroni_config_local: 70-local.conf
 _patroni_config_ansible: 90-ansible.conf
 
@@ -142,9 +142,11 @@ _patroni_cluster_hba_base:
 _patroni_cluster_extensions:
   - name: pgaudit
     enabled: "{{ _patroni_cluster_pgaudit_enable }}"
+  - name: pg_cron
+    enabled: "{{ _patroni_cluster_pg_cron_enable }}"
 
 _patroni_cluster_pgaudit_enable: "{{ patroni_cluster_pgadmin_enable | default(True) }}"
-_patroni_cluster_pgaudit_log: "{{ patorni_cluster_pgadmin_log | defaut('ALL') }}"
+_patroni_cluster_pgaudit_log: "{{ patroni_cluster_pgadmin_log | defaut('ALL') }}"
 _patroni_cluster_pgaudit_log_catalog: "{{ patroni_cluster_pgadmin_log_catalog | default('off') }}"
 _patroni_cluster_pgaudit_log_client: "{{ patroni_cluster_pgadmin_log_client | default('off') }}"
 _patroni_cluster_pgaudit_log_level: "{{ patroni_cluster_pgadmin_log_level | default('log') }}"
@@ -165,6 +167,11 @@ _patroni_cluster_pgaudit_config: |
   pgaudit.log_rows = '{{ _patroni_cluster_pgaudit_log_rows }}'
   pgaudit.log_statement = '{{ _patroni_cluster_pgaudit_log_statement }}'
   pgaudit.log_statement_once = '{{ _patroni_cluster_pgaudit_log_statement_once }}'
+
+_patroni_cluster_pg_cron_enable: "{{ patroni_cluster_pg_cron_enable | default(True) }}"
+_patroni_cluster_pg_cron_timezone: 'GMT'
+_patroni_cluster_pg_cron_config: |
+  cron.timezone =  '{{ _patroni_cluster_pg_cron_timezone }}'
 
 consul_group_name: "{{ patroni_consul_group | default('patroni_consul') }}"
 consul_release: "{{ patroni_release_consul | default(patroni_defaults_release_consul) }}"

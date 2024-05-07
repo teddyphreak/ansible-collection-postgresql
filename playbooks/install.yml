@@ -28,8 +28,14 @@
 
 
 - name: Deploy pgaudit extension
-  ansible.builtin.import_playbook: nephelaiio.patroni.pgaudit
+  ansible.builtin.import_playbook: nephelaiio.patroni.extension
+  vars:
+    _patroni_extension: pgaudit
 
+- name: Deploy pg_cron extension
+  ansible.builtin.import_playbook: nephelaiio.patroni.extension
+  vars:
+    _patroni_extension: pg_cron
 
 - name: Deploy Barman nodes
   ansible.builtin.import_playbook: nephelaiio.patroni.barman
