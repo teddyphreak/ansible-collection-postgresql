@@ -183,6 +183,7 @@
             _registered: "{{ _extension_query.query_result | map(attribute='extname') }}"
             _expected:
               - pgaudit
+              - pg_cron
             _missing: "{{ _expected | difference(_registered) }}"
 
         - name: Verify registered extensions
