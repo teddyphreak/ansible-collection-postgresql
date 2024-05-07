@@ -163,7 +163,8 @@
               - _status.state in ['running', 'streaming']
           vars:
             _members: "{{ _cluster_status_query.json.members }}"
-            _status: "{{ _members | selectattr('name', 'equalto', inventory_hostname) | first }}"
+            _hostname: "{{ ansible_hostname | ansible.builtin.regex_replace('-', '_') }}"
+            _status: "{{ _members | selectattr('name', 'equalto', _hostname) | first }}"
 
     - name: Verify cluster extensions
       block:
