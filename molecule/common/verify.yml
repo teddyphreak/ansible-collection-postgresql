@@ -184,6 +184,7 @@
             _expected:
               - pgaudit
               - pg_cron
+              - pg_stat_statements
             _missing: "{{ _expected | difference(_registered) }}"
 
         - name: Verify registered extensions
