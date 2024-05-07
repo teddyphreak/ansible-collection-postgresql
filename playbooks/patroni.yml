@@ -138,20 +138,25 @@
         mode: 0640
       tags: configure
       vars:
+        _map_format: nephelaiio.plugins.map_format
         _svc_running: "{{ (services[_patroni_cluster_service_name].state | default('running')) == 'running' }}"
-        _slot: "[ '%s', { 'type': 'physical' } ]"
+        _slot_template: "[ '%s', { 'type': 'physical' } ]"
+        _slot_barman: "{{ _patroni_cluster_slot_barman }}"
+        _cluster_extensions: "{{ _patroni_cluster_extensions | selectattr('enabled') }}"
         _cluster_size: "{{ _cluster_hosts | length }}"
-        _cluster_hosts: "{{ groups[_patroni_cluster_hostgroup] | map('split', '.') | map('first') | map('regex_replace', '-', '_')}}"
-        _cluster_slot_data: "[ {{ _cluster_hosts | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
+        _cluster_group: "{{ _patroni_cluster_hostgroup }}"
+        _cluster_hostsnames: "{{ groups[_cluster_group] | map('extract', hostvars, ['ansible_hostname']) }}"
+        _cluster_hosts: "{{ _cluster_hostnames | map('regex_replace', '-', '_') }}"
+        _cluster_slot_data: "[{{ _cluster_hosts | map(_map_format, _slot_template) | join(',') }}]"
         _cluster_slots: "{{ _cluster_slot_data | community.general.dict }}"
-        _barman_slot_data: "[ {{ [_patroni_cluster_slot_barman] | map('nephelaiio.plugins.map_format', _slot) | join(',') }} ]"
+        _barman_slot_data: "[{{ [_slot_barman] | map(_map_format, _slot_template) | join(',') }}]"
         _barman_slots: "{{ _barman_slot_data | community.general.dict }}"
         _config_cluster_name: "{{ _patroni_cluster_name }}"
         _config_port_psql: "{{ _patroni_cluster_port_psql }}"
         _config_port_restapi: "{{ _patroni_cluster_port_restapi }}"
         _config_datadir: "{{ _postgresql_datadir }}"
         _config_socketdir: "{{ _postgresql_socketdir }}"
-        _config_host_name: "{{ ansible_hostname }}"
+        _config_host_name: "{{ ansible_hostname | ansible.builtin.regex_replace('-', '_') }}"
         _config_configdir: "{{ _postgresql_confdir }}"
         _config_bindir: "{{ _postgresql_bindir }}"
         _config_address: "{{ ansible_default_ipv4.address }}"
@@ -170,7 +175,7 @@
         _config_maxlag_sync: "{{ _patroni_cluster_maxlag_sync }}"
         _config_start_timeout: "{{ _patroni_cluster_start_timeout }}"
         _config_hba: "{{ _patroni_cluster_hba_base + _patroni_cluster_hba_extra }}"
-        _config_libraries: "{{ _patroni_cluster_extensions | selectattr('enabled') | map(attribute='name') | join(',') }}"
+        _config_libraries: "{{ _cluster_extensions | map(attribute='name') | join(',') }}"
       notify: patroni_reload
 
     - name: Manage Patroni profile
