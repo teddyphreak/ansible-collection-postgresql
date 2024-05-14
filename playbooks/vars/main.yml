@@ -47,6 +47,7 @@ _patroni_cluster_rewind_username: "{{ patroni_cluster_rewind_username | default(
 _patroni_cluster_rewind_password: "{{ patroni_cluster_rewind_password }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
 _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/patroni') }}"
+_patroni_cluster_log_path: "{{ patroni_cluster_log_path | default('/var/log/postgresql') }}"
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/{{ (ansible_os_family == 'Debian') | ternary('config', 'patroni') }}.yml"
 _patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60') }}"
 _patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"

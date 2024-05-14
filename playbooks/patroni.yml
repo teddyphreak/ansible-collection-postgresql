@@ -176,6 +176,7 @@
         _config_start_timeout: "{{ _patroni_cluster_start_timeout }}"
         _config_hba: "{{ _patroni_cluster_hba_base + _patroni_cluster_hba_extra }}"
         _config_libraries: "{{ _cluster_extensions | map(attribute='name') | join(',') }}"
+        _config_log_dir: "{{ _patroni_cluster_log_path }}"
       notify: patroni_reload
 
     - name: Manage Patroni profile
