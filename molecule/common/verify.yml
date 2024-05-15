@@ -114,6 +114,12 @@
             path: "{{ _patroni_cluster_config_file }}"
           register: _patroni_config_stat
 
+        - name: Stat Patroni log directory
+          ansible.builtin.stat:
+            path: "{{ patroni_cluster_log_path }}"
+          register: _patroni_log_dir_stat
+          when: patroni_cluster_log_path is defined
+
         - name: Slurp Patroni configuration
           ansible.builtin.slurp:
             path: "{{ _patroni_cluster_config_file }}"
