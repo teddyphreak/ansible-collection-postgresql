@@ -1,0 +1,3 @@
+---
+- name: Import libvirt create playbook
+  ansible.builtin.import_playbook: nephelaiio.libvirt.create
