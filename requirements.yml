@@ -4,5 +4,6 @@ collections:
   - name: nephelaiio.patroni
     source: .
     type: dir
+  - name: nephelaiio.libvirt
   - name: nephelaiio.plugins
   - name: nephelaiio.consul

@@ -5,11 +5,6 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - 'playbooks/prepare.yml'
-      - 'molecule/update/*.yml'
-      - 'playbooks/update.yml'
-      - '.github/workflows/libvirt.yml'
 
 jobs:
   version:

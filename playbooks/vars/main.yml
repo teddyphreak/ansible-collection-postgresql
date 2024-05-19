@@ -178,8 +178,8 @@ _patroni_cluster_pg_cron_config: |
 
 _patroni_cluster_pg_stat_statements_enable: "{{ patroni_cluster_pg_stat_statements_enable | default(True) }}"
 _patroni_cluster_pg_stat_statements_compute_query_id: 'on'
-_patroni_cluster_pg_stat_statements_max: 1000
-_patroni_cluster_pg_stat_statements_track: 'all'
+_patroni_cluster_pg_stat_statements_max: "{{ patroni_cluster_pg_stat_statements_max | default(5000) }}"
+_patroni_cluster_pg_stat_statements_track: "{{ patroni_cluster_pg_stat_statements_track | default('all') }}"
 _patroni_cluster_pg_stat_statements_config: |
   compute_query_id = '{{ _patroni_cluster_pg_stat_statements_compute_query_id }}'
   pg_stat_statements.max = {{ _patroni_cluster_pg_stat_statements_max }}
