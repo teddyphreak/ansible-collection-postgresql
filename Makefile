@@ -27,6 +27,7 @@ install:
 	@type poetry >/dev/null || pip3 install poetry
 	@type yq || sudo apt-get install -y yq
 	@sudo apt-get install -y libvirt-dev
+	@type nmcli || sudo apt-get install -y network-manager
 	@poetry install --no-root
 
 lint: install
@@ -35,10 +36,11 @@ lint: install
 requirements: install
 	@rm -rf ${ROLE_DIR}/*
 	@python --version
-	@poetry run ansible-galaxy role install \
-		--force --no-deps \
-		--roles-path ${ROLE_DIR} \
-		--role-file ${ROLE_FILE}
+	[ -f ${ROLE_FILE} ] && \
+		poetry run ansible-galaxy role install \
+			--force --no-deps \
+			--roles-path ${ROLE_DIR} \
+			--role-file ${ROLE_FILE}
 	@poetry run ansible-galaxy collection install \
 		--force-with-deps .
 	@\find ./ -name "*.ymle*" -delete

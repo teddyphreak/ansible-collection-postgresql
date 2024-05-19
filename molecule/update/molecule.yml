@@ -85,6 +85,7 @@ provisioner:
     hosts:
       all:
         vars:
+          libvirt_platforms: "{{ molecule_yml.platforms }}"
           patroni_nolog: false
           postgresql_nolog: "{{ patroni_nolog | bool }}"
           patroni_consul_backuppath: /backup
