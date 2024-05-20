@@ -127,6 +127,14 @@
         - config.yml.in
         - dcs.yml
 
+    - name: Create log directory
+      ansible.builtin.file:
+        path: "{{ _patroni_cluster_log_path }}"
+        state: directory
+        owner: "{{ _postgresql_user }}"
+        group: "{{ _postgresql_group }}"
+        mode: 0777
+
     - name: Bootstrap cluster configuration
       ansible.builtin.template:
         src: "patroni.yml.j2"
