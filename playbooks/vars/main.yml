@@ -48,6 +48,7 @@ _patroni_cluster_rewind_password: "{{ patroni_cluster_rewind_password }}"
 _patroni_cluster_backup_path: "{{ patroni_cluster_backup_path | default('/backups/patroni') }}"
 _patroni_cluster_config_path: "{{ patroni_cluster_config_path | default('/etc/patroni') }}"
 _patroni_cluster_log_path: "{{ patroni_cluster_log_path | default('/var/log/patroni') }}"
+_patroni_cluster_log_destination: "{{ patroni_cluster_log_destination | default('stderr,jsonlog') }}"
 _patroni_cluster_config_file: "{{ _patroni_cluster_config_path }}/{{ (ansible_os_family == 'Debian') | ternary('config', 'patroni') }}.yml"
 _patroni_cluster_start_timeout: "{{ patroni_cluster_start_timeout | default('60') }}"
 _patroni_cluster_hba_extra: "{{ patroni_cluster_hba | default([]) }}"
@@ -244,5 +245,5 @@ postgresql_conf_socketdir_manage: false
 postgresql_nolog: "{{ _patroni_nolog }}"
 postgresql_conf_ansible: |
   logging_collector = on
-  log_destination = 'stderr,jsonlog'
+  log_destination = '{{ _patroni_cluster_log_destination }}'
   log_directory = '{{ _patroni_cluster_log_path }}'
