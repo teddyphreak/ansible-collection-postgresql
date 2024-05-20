@@ -22,7 +22,6 @@ postgresql:
   bin_dir: {{ _config_bindir }}
   parameters:
     shared_preload_libraries: "{{ _config_libraries }}"
-    log_directory: {{ _config_log_dir }}
   authentication:
     superuser:
       username: postgres

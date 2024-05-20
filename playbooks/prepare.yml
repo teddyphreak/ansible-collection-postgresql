@@ -40,9 +40,3 @@
           - rsync
           - cron
       when: ansible_os_family == 'Debian'
-
-    - name: Prepare log directory
-      ansible.builtin.file:
-        path: "{{ patroni_cluster_log_path }}"
-        state: present
-      when: patroni_cluster_log_path is defined

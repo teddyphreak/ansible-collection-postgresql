@@ -16,6 +16,7 @@
     - name: Query client version
       ansible.builtin.command: psql --version
       register: _psql_version
+      changed_when: false
 
     - name: Check client version
       ansible.builtin.assert:
@@ -101,11 +102,22 @@
         query: 'SHOW data_checksums'
       become: true
       become_user: "{{ _postgresql_user }}"
-      register: postgresql_checksums
+      register: _postgresql_checksums
 
     - name: Verify data checksum
       ansible.builtin.assert:
-        that: postgresql_checksums.query_result[0].data_checksums == "on"
+        that: _postgresql_checksums.query_result[0].data_checksums == "on"
+
+    - name: Query Patroni log directory
+      ansible.builtin.stat:
+        path: "{{ _patroni_cluster_log_path }}"
+      register: _patroni_cluster_log_query
+
+    - name: Verify Patroni log directory
+      ansible.builtin.assert:
+        that:
+          - _patroni_cluster_log_query.stat.exists
+          - _patroni_cluster_log_query.stat.isdir
 
     - name: Verify Patroni cluster status
       block:
@@ -113,12 +125,6 @@
           ansible.builtin.stat:
             path: "{{ _patroni_cluster_config_file }}"
           register: _patroni_config_stat
-
-        - name: Stat Patroni log directory
-          ansible.builtin.stat:
-            path: "{{ patroni_cluster_log_path }}"
-          register: _patroni_log_dir_stat
-          when: patroni_cluster_log_path is defined
 
         - name: Slurp Patroni configuration
           ansible.builtin.slurp:
@@ -171,6 +177,33 @@
             _members: "{{ _cluster_status_query.json.members }}"
             _hostname: "{{ ansible_hostname | ansible.builtin.regex_replace('-', '_') }}"
             _status: "{{ _members | selectattr('name', 'equalto', _hostname) | first }}"
+
+        - name: Query cluster configuration
+          ansible.builtin.uri:
+            url: "http://localhost:{{ _patroni_cluster_port_restapi }}/config"
+            user: "{{ _api_username }}"
+            password: "{{ _api_password }}"
+            method: GET
+            status_code: 200
+            timeout: 3
+          register: _patroni_cluster_config
+
+    - name: Verify cluster log destination
+      block:
+        - name: Query registered extensions
+          community.postgresql.postgresql_query:
+            query: "SELECT pg_current_logfile()"
+            db: postgres
+          become: true
+          become_user: postgres
+          register: _log_query
+
+        - name: Verify log destination
+          ansible.builtin.assert:
+            that: _pg_logfile_path | ansible.builtin.regex_search("^{{ _patroni_cluster_log_path }}/.*")
+          vars:
+            _pg_logfile_result: "{{ _log_query.query_result | first }}"
+            _pg_logfile_path: "{{ _pg_logfile_result.pg_current_logfile }}"
 
     - name: Verify cluster extensions
       block:

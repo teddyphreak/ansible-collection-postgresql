@@ -169,7 +169,6 @@ provisioner:
           patroni_molecule_password: molecule
           patroni_molecule_database: seed
           patroni_pagila_database: pagila
-          patroni_cluster_log_path: /var/log/postgresql/
           patroni_cluster_roles:
             - name: "{{ patroni_molecule_username }}"
               password: "{{ patroni_molecule_password }}"
