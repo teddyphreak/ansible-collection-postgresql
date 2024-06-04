@@ -72,6 +72,7 @@
 
     - name: Reboot node
       ansible.builtin.reboot:
+        reboot_timeout: "{{ patroni_reboot_timeout | default(300) }}"
 
     - name: Verify replica status
       ansible.builtin.uri:
@@ -171,6 +172,7 @@
 
     - name: Reboot node
       ansible.builtin.reboot:
+        reboot_timeout: "{{ patroni_reboot_timeout | default(300) }}"
 
     - name: Verify replica status
       ansible.builtin.uri:
