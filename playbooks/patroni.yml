@@ -224,8 +224,10 @@
             method: GET
             status_code: 200
             timeout: 3
+          register: _patroni_liveness_query
           retries: 30
           delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+          until: _patroni_liveness_query is succeeded
 
         - name: Verify primary status
           ansible.builtin.uri:
@@ -235,8 +237,10 @@
             method: GET
             status_code: 200
             timeout: 3
+          register: _patroni_status_query
           retries: 30
           delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+          until: _patroni_status_query is succeeded
 
     - name: Start Patroni slave node
       when: inventory_hostname not in groups[_patroni_groups_master]
@@ -255,8 +259,10 @@
             method: GET
             status_code: 200
             timeout: 3
+          register: _patroni_liveness_query
           retries: 30
           delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+          until: _patroni_liveness_query is succeeded
 
         - name: Verify replica status
           ansible.builtin.uri:
@@ -266,8 +272,10 @@
             method: GET
             status_code: 200
             timeout: 3
+          register: _patroni_status_query
           retries: 30
           delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
+          until: _patroni_status_query is succeeded
 
   handlers:
     - name: Reload Patroni
