@@ -32,6 +32,7 @@ install:
 
 lint: install
 	poetry run yamllint .
+	poetry run ansible-lint .
 
 requirements: install
 	@rm -rf ${ROLE_DIR}/*
