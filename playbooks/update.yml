@@ -86,7 +86,7 @@
         _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
       retries: 30
       register: patroni_status
-      until: patroni_status is success
+      until: patroni_status is succeeded
       delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
 
@@ -162,7 +162,7 @@
         _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
       retries: 30
       register: patroni_status
-      until: patroni_status is success
+      until: patroni_status is succeeded
       delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
     - name: Stop Patroni service
@@ -187,7 +187,7 @@
         _maxlag: "{{ [_conf_lag] | map('select', 'gt', 0) | min | first }}"
       retries: 30
       register: patroni_status
-      until: patroni_status is success
+      until: patroni_status is succeeded
       delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
 
