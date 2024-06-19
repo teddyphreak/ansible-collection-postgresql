@@ -76,14 +76,22 @@
           loop: "{{ groups[_patroni_cluster_hostgroup] }}"
           delegate_to: "{{ item }}"
 
-    - name: List Barman cluster configuration templates
+    - name: Create Barman configuration directory
+      ansible.builtin.file:
+        dest: "{{ _patroni_barman_conf_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "u=wrx,go=rx"
+
+    - name: List Barman configuration templates
       ansible.builtin.find:
         paths: "{{ _patroni_barman_conf_dir }}"
         file_type: any
         patterns: "*-template"
       register: _barman_cluster_templates
 
-    - name: Remove Barman cluster configuration templates
+    - name: Remove Barman configuration templates
       ansible.builtin.file:
         dest: "{{ item }}"
         state: absent

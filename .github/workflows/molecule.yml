@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         scenario:
-          - install
-          - databases
-          - barman
+          - name: install
+          - name: databases
+          - name: barman
         image:
           - name: ubuntu2204
             command: /lib/systemd/systemd
@@ -52,5 +52,5 @@ jobs:
         env:
           MOLECULE_DOCKER_IMAGE: ${{ matrix.image.name }}
           MOLECULE_DOCKER_COMMAND: ${{ matrix.image.command }}
-          MOLECULE_SCENARIO: ${{ matrix.scenario }}
+          MOLECULE_SCENARIO: ${{ matrix.scenario.name }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
