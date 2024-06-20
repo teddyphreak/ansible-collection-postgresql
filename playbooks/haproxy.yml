@@ -35,7 +35,7 @@
         dest: "{{ _patroni_haproxy_config_file }}"
         owner: "{{ _patroni_haproxy_user }}"
         group: "{{ _patroni_haproxy_group }}"
-        mode: 0640
+        mode: "u=rw,g=r,o="
       vars:
         _restapi_auth: "{{ _patroni_cluster_api_username }}:{{ _patroni_cluster_api_password }}"
         _socket_debian: "/run/haproxy/admin.sock"

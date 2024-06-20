@@ -41,7 +41,7 @@
             content: "{{ _extension_config }}"
             owner: "{{ _postgresql_user }}"
             group: "{{ _postgresql_group }}"
-            mode: 0644
+            mode: "u=rw,go=r"
           notify: patroni_reload
 
         - name: Enable {{ _patroni_extension }} extension

@@ -95,7 +95,7 @@
         state: directory
         owner: "{{ _postgresql_user }}"
         group: "{{ _postgresql_group }}"
-        mode: 0750
+        mode: "u=rwx,g=rx,o="
 
     - name: Configure watchdog support
       when: _patroni_watchdog_enable | bool
@@ -133,7 +133,7 @@
         state: directory
         owner: "{{ _postgresql_user }}"
         group: "{{ _postgresql_group }}"
-        mode: 0777
+        mode: "ugo=rwx"
 
     - name: Bootstrap cluster configuration
       ansible.builtin.template:
@@ -143,7 +143,7 @@
         force: "{{ _patroni_config_overwrite }}"
         owner: "{{ _postgresql_user }}"
         group: "{{ _postgresql_group }}"
-        mode: 0640
+        mode: "u=rw,g=r,o="
       tags: configure
       vars:
         _map_format: nephelaiio.plugins.map_format
@@ -193,7 +193,7 @@
         create: true
         owner: root
         group: root
-        mode: 0644
+        mode: "u=rw,go=r"
 
     - name: Slurp Patroni configuration
       ansible.builtin.slurp:

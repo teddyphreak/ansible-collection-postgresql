@@ -55,12 +55,12 @@
             state: directory
             owner: "{{ _patroni_barman_user }}"
             group: "{{ _patroni_barman_group }}"
-            mode: 0755
+            mode: "u=rwx,go=rx"
 
         - name: Create SSH keypair
           community.crypto.openssh_keypair:
             path: "{{ _patroni_barman_ssh_keypair }}"
-            mode: 0600
+            mode: "u=rw,go="
           retries: 2
           delay: 5
           become_user: "{{ _patroni_barman_user }}"
@@ -76,14 +76,22 @@
           loop: "{{ groups[_patroni_cluster_hostgroup] }}"
           delegate_to: "{{ item }}"
 
-    - name: List Barman cluster configuration templates
+    - name: Create Barman configuration directory
+      ansible.builtin.file:
+        dest: "{{ _patroni_barman_conf_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "u=wrx,go=rx"
+
+    - name: List Barman configuration templates
       ansible.builtin.find:
         paths: "{{ _patroni_barman_conf_dir }}"
         file_type: any
         patterns: "*-template"
       register: _barman_cluster_templates
 
-    - name: Remove Barman cluster configuration templates
+    - name: Remove Barman configuration templates
       ansible.builtin.file:
         dest: "{{ item }}"
         state: absent
@@ -95,7 +103,7 @@
         state: directory
         owner: "{{ _patroni_barman_user }}"
         group: "{{ _patroni_barman_user }}"
-        mode: 0750
+        mode: "u=rwx,g=rx,o="
 
     - name: Manage Barman server configuration
       ansible.builtin.template:
@@ -103,7 +111,7 @@
         dest: "{{ _patroni_barman_conf_file }}"
         owner: "{{ _patroni_barman_user }}"
         group: "{{ _patroni_barman_user }}"
-        mode: 0640
+        mode: "u=rw,g=r,o="
       vars:
         _conf_user: "{{ _patroni_barman_user }}"
         _conf_group: "{{ _patroni_barman_group }}"
@@ -121,7 +129,7 @@
         dest: "{{ _patroni_barman_home }}/.pgpass"
         owner: "{{ _patroni_barman_user }}"
         group: "{{ _patroni_barman_user }}"
-        mode: 0600
+        mode: "u=rw,go="
       vars:
         _conf_db_user: "{{ _patroni_cluster_barman_username }}"
         _conf_db_pass: "{{ _patroni_cluster_barman_password }}"
@@ -136,7 +144,7 @@
             dest: "{{ _patroni_barman_conf_dir }}/{{ _conf_cluster }}.conf"
             owner: "{{ _patroni_barman_user }}"
             group: "{{ _patroni_barman_user }}"
-            mode: 0640
+            mode: "u=rw,g=r,o="
             backup: true
           vars:
             _conf_cluster: "{{ _patroni_cluster_name }}"
@@ -173,6 +181,10 @@
             - name: Verify Barman cluster backup configuration
               ansible.builtin.command: "barman check {{ _patroni_cluster_name }}"
               become_user: "{{ _patroni_barman_user }}"
+              register: _barman_check
+              retries: 10
+              delay: 6
+              until: _barman_check is succeeded
 
       rescue:
         - name: Restore Barman cluster configuration
@@ -185,7 +197,7 @@
           when: _backup_attr in barman_cluster_conf
 
         - name: Fail cluster configuration
-          ansible.builtin.file:
+          ansible.builtin.fail:
             msg: "barman configuration validation failed for server {{ _patroni_cluster_name }}"
 
       always:
