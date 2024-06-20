@@ -19,6 +19,20 @@
     - nephelaiio.patroni.update
 
 
+- name: Update Patroni Barman hosts
+  hosts: "{{ _patroni_barman_hostgroup }}"
+  serial: 1
+  become: true
+  any_errors_fatal: true
+  vars_files:
+    - main.yml
+  vars:
+    update_reboot: true
+    update_cache_valid_time: 1
+  roles:
+    - nephelaiio.patroni.update
+
+
 - name: Update Patroni PostgreSQL slaves
   hosts: "_patroni_cluster_slave:!{{ _patroni_update_skip_hostgroup }}"
   become: true
