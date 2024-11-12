@@ -70,6 +70,10 @@
         password: "{{ _api_password }}"
         method: GET
         status_code: 200
+      retries: 30
+      register: patroni_status
+      until: patroni_status is succeeded
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
     - name: Verify replica status
       ansible.builtin.uri:
@@ -78,6 +82,10 @@
         password: "{{ _api_password }}"
         method: GET
         status_code: 200
+      retries: 30
+      register: patroni_status
+      until: patroni_status is succeeded
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
     - name: Stop Patroni service
       ansible.builtin.service:
@@ -141,6 +149,10 @@
         method: GET
         status_code: 200
         timeout: 3
+      retries: 30
+      register: patroni_status
+      until: patroni_status is succeeded
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
     - name: Verify primary status
       ansible.builtin.uri:
@@ -150,6 +162,10 @@
         method: GET
         status_code: 200
         timeout: 3
+      retries: 30
+      register: patroni_status
+      until: patroni_status is succeeded
+      delay: "{{ ((_patroni_cluster_start_timeout | int) / 10) | round(0, 'ceil') | int }}"
 
     - name: Switchover cluster role
       ansible.builtin.uri:
