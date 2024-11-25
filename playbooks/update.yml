@@ -45,7 +45,7 @@
     update_cache_valid_time: 1
   roles:
     - nephelaiio.patroni.update
-  tasks:
+  pre_tasks:
     - name: Stat Patroni configuration file
       ansible.builtin.stat:
         path: "{{ _patroni_cluster_config_file }}"
@@ -92,6 +92,7 @@
         name: patroni
         state: stopped
 
+  post_tasks:
     - name: Reboot node
       ansible.builtin.reboot:
         reboot_timeout: "{{ patroni_reboot_timeout | default(300) }}"
@@ -123,7 +124,7 @@
     update_cache_valid_time: 1
   roles:
     - nephelaiio.patroni.update
-  tasks:
+  pre_tasks:
     - name: Stat Patroni configuration file
       ansible.builtin.stat:
         path: "{{ _patroni_cluster_config_file }}"
@@ -200,6 +201,7 @@
         name: patroni
         state: stopped
 
+  post_tasks:
     - name: Reboot node
       ansible.builtin.reboot:
         reboot_timeout: "{{ patroni_reboot_timeout | default(300) }}"
