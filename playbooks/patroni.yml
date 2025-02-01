@@ -2,7 +2,6 @@
 - name: Set cluster facts
   ansible.builtin.import_playbook: nephelaiio.patroni.facts
 
-
 - name: Deploy Patroni cluster members
   hosts: "_patroni_cluster_master:_patroni_cluster_slave"
   any_errors_fatal: true
@@ -37,7 +36,7 @@
       block:
         - name: Query PostgreSQL releases
           ansible.builtin.shell:
-            cmd: "apt-cache madison {{ item }} | awk -F'|' '{ print $2 }' | grep {{ _release }} | {{ _format }}"
+            cmd: "set -o pipefail && apt-cache madison {{ item }} | awk -F'|' '{ print $2 }' | grep {{ _release }} | {{ _format }}"
             executable: "/bin/bash"
           vars:
             _format: "uniq | sort -r | head -1 | xargs"
@@ -67,7 +66,7 @@
       block:
         - name: Query PostgreSQL releases
           ansible.builtin.shell:
-            cmd: "yum list {{ item }} --showduplicates | grep '{{ _release }}' | {{ _format }}"
+            cmd: "set -o pipefail && yum list {{ item }} --showduplicates | grep '{{ _release }}' | {{ _format }}"
           vars:
             _format: "awk -v OFS='=' '{ print $1,$2 }' | sed -E 's/[.][^=]+//' | tail -1 | xargs"
             _release: "{{ _patroni_release_postgresql }}"

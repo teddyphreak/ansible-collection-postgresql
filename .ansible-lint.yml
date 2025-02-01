@@ -1,0 +1,4 @@
+---
+warn_list:
+  - partial-become
+  - no-changed-when
