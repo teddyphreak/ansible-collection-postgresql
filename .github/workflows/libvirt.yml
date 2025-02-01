@@ -44,7 +44,7 @@ jobs:
       - name: Set up python 3
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
       - name: Update ubuntu repositories
         run: sudo apt-get update
@@ -64,7 +64,7 @@ jobs:
       - name: Run molecule tests.
         run: make test
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
           MOLECULE_KVM_IMAGE: ${{ matrix.image }}
           MOLECULE_SCENARIO: ${{ matrix.scenario }}
