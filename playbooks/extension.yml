@@ -1,12 +1,12 @@
 ---
-- name: Deploy Patroni {{ _patroni_extension }} extension
+- name: Deploy Patroni extension - {{ _patroni_extension }}
   hosts: _patroni_cluster_master
   any_errors_fatal: true
   become: true
   vars_files:
     - main.yml
   tasks:
-    - name: Set {{ _patroni_extension }} extension facts
+    - name: Set extension facts - {{ _patroni_extension }}
       ansible.builtin.set_fact:
         _extension_enable: "{{ lookup('ansible.builtin.vars', _extension_enable_vardef) }}"
         _extension_config: "{{ lookup('ansible.builtin.vars', _extension_config_vardef) }}"
@@ -16,26 +16,26 @@
         _extension_config_vardef: "{{ lookup('ansible.builtin.varnames', '^_patroni_cluster_' + _patroni_extension + '_config') }}"
         _extension_path_vardef: "{{ lookup('ansible.builtin.varnames', '^_patroni_config_' + _patroni_extension + '$') }}"
 
-    - name: Unregister PostgreSQL {{ _patroni_extension }} extension
+    - name: Unregister PostgreSQL extension - {{ _patroni_extension }}
       when: not (_extension_enable | bool)
       block:
-        - name: Disable {{ _patroni_extension }} extension
+        - name: Disable extension - {{ _patroni_extension }}
           community.postgresql.postgresql_query:
             query: "DROP EXTENSION IF EXISTS {{ _patroni_extension }}"
             db: postgres
           become_user: "{{ _postgresql_user }}"
 
-        - name: Destroy PostgreSQL {{ _patroni_extension }} config
+        - name: Destroy PostgreSQL config - {{ _patroni_extension }}
           ansible.builtin.file:
             path: "{{ _postgresql_conf_include }}/{{ _extension_path }}"
             state: absent
           when: not (_extension_enable | bool)
           notify: postgresql_reload
 
-    - name: Register PostgreSQL {{ _patroni_extension }} extension
+    - name: Register PostgreSQL extension - {{ _patroni_extension }}
       when: _extension_enable | bool
       block:
-        - name: Manage PostgreSQL {{ _patroni_extension }} include config
+        - name: Manage PostgreSQL include config - {{ _patroni_extension }}
           ansible.builtin.copy:
             dest: "{{ _postgresql_conf_include }}/{{ _extension_path }}"
             content: "{{ _extension_config }}"
@@ -44,7 +44,7 @@
             mode: "u=rw,go=r"
           notify: patroni_reload
 
-        - name: Enable {{ _patroni_extension }} extension
+        - name: Enable extension - {{ _patroni_extension }}
           community.postgresql.postgresql_query:
             query: "CREATE EXTENSION IF NOT EXISTS {{ _patroni_extension }}"
             db: postgres

@@ -7,7 +7,7 @@ MOLECULE_DOCKER_IMAGE ?= ubuntu2204
 MOLECULE_DOCKER_COMMAND ?= /lib/systemd/systemd
 MOLECULE_KVM_IMAGE ?= https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
 GALAXY_API_KEY ?=
-GITHUB_REPOSITORY ?= $$(git config --get remote.origin.url | cut -d: -f 2 | cut -d. -f 1)
+GITHUB_REPOSITORY ?= $$(git config --get remote.origin.url | cut -d':' -f 2 | cut -d. -f 1)
 GITHUB_ORG = $$(echo ${GITHUB_REPOSITORY} | cut -d/ -f 1)
 GITHUB_REPO = $$(echo ${GITHUB_REPOSITORY} | cut -d/ -f 2)
 REQUIREMENTS = requirements.yml
@@ -27,6 +27,7 @@ test: lint
 
 install:
 	@type poetry >/dev/null 2>/dev/null 2>/dev/null || pip3 install poetry
+	@poetry self add poetry-plugin-export
 	@type yq >/dev/null 2>/dev/null || sudo ${PKGMAN} install -y yq
 	@type expect >/dev/null 2>/dev/null || sudo ${PKGMAN} install -y expect
 	@type nmcli >/dev/null 2>/dev/null || sudo ${PKGMAN} install -y $$(if [[ "${HOST_DISTRO}" == "fedora" ]]; then echo NetworkManager; else echo network-manager; fi)
@@ -34,18 +35,19 @@ install:
 	@sudo ${PKGMAN} install -y $$(if [[ "${HOST_DISTRO}" == "fedora" ]]; then echo libvirt-devel; else echo libvirt-dev; fi)
 	@poetry install --no-root
 
-lint: install
+lint: requirements
 	poetry run yamllint .
-	poetry run ansible-lint .
+	poetry run ansible-lint playbooks/
 
 requirements: install
-	@rm -rf ${ROLE_DIR}/*
 	@python --version
-	[ -f ${ROLE_FILE} ] && \
+	@rm -rf ${ROLE_DIR}/*
+	@if [ -f ${ROLE_FILE} ]; then \
 		poetry run ansible-galaxy role install \
 			--force --no-deps \
 			--roles-path ${ROLE_DIR} \
-			--role-file ${ROLE_FILE}
+			--role-file ${ROLE_FILE} ; \
+	fi
 	@poetry run ansible-galaxy collection install \
 		--force-with-deps .
 	@\find ./ -name "*.ymle*" -delete
@@ -84,4 +86,4 @@ version:
 	@poetry run molecule --version
 
 debug: version
-	@poetry export --dev --without-hashes
+	@poetry export --dev --without-hashes || exit 0

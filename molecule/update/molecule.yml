@@ -98,6 +98,7 @@ provisioner:
           libvirt_platforms: "{{ molecule_yml.platforms }}"
           patroni_nolog: false
           postgresql_nolog: "{{ patroni_nolog | bool }}"
+          patroni_release_postgresql: 16
           patroni_consul_backuppath: /backup
           patroni_cluster_name: molecule
           patroni_cluster_api_password: molecule

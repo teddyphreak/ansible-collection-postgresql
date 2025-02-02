@@ -4,7 +4,6 @@
   vars:
     patroni_bootstrap_allow: false
 
-
 - name: Manage Barman users
   hosts: _patroni_cluster_master
   become: true
@@ -18,7 +17,6 @@
         role_attr_flags: SUPERUSER
       no_log: "{{ _patroni_nolog }}"
       become_user: "{{ _postgresql_user }}"
-
 
 - name: Deploy Barman
   hosts: "{{ _patroni_barman_hostgroup }}"
@@ -191,9 +189,10 @@
           ansible.builtin.copy:
             dest: "{{ _patroni_barman_conf_dir }}/{{ _conf_cluster }}.conf"
             src: "{{ barman_cluster_conf[_backup_attr] }}"
+            mode: "u=rw,g=r,o="
             remote_src: true
           vars:
-            _backup_attr: 'backup_file'
+            _backup_attr: "backup_file"
           when: _backup_attr in barman_cluster_conf
 
         - name: Fail cluster configuration
@@ -206,7 +205,7 @@
             path: "{{ barman_cluster_conf[_backup_attr] }}"
             state: absent
           vars:
-            _backup_attr: 'backup_file'
+            _backup_attr: "backup_file"
           when: _backup_attr in barman_cluster_conf
 
     - name: Manage Barman cron cronjob
