@@ -225,7 +225,7 @@
       ansible.builtin.cron:
         user: "{{ _patroni_barman_user }}"
         name: "barman_backup"
-        job: "barman backup 2>&1 > {{ _patroni_barman_conf_log_file | dirname }}/backup.log"
+        job: "barman backup {{ _conf_cluster }} 2>&1 > {{ _patroni_barman_conf_log_file | dirname }}/backup.log"
         minute: "{{ _crontab[0] }}"
         hour: "{{ _crontab[1] }}"
         day: "{{ _crontab[2] }}"
@@ -233,3 +233,4 @@
         weekday: "{{ _crontab[4] }}"
       vars:
         _crontab: "{{ _patroni_barman_backup_crontab | split(' ') }}"
+        _conf_cluster: "{{ _patroni_cluster_name }}"
