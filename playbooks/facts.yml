@@ -17,7 +17,6 @@
         _hostname: "{{ inventory_hostname }}"
         _address: "{{ ansible_default_ipv4.address }}"
 
-
 - name: Query PostgreSQL cluster status
   hosts: "{{ _patroni_cluster_hostgroup }}"
   become: true
@@ -85,7 +84,7 @@
         _masters: "{{ groups['_cluster_master'] | default([]) }}"
         _slaves: "{{ groups['_cluster_slave'] | default([]) }}"
         _unique_master: "{{ _masters | length < 2 }}"
-        _has_master: "{{ _masters | length > 0  }}"
+        _has_master: "{{ _masters | length > 0 }}"
         _has_slaves: "{{ _slaves | length > 0 }}"
         _slaves_have_master: "{{ not _has_slaves or _has_master }}"
 

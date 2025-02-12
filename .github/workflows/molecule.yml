@@ -21,8 +21,6 @@ jobs:
             command: /lib/systemd/systemd
           - name: debian12
             command: /lib/systemd/systemd
-          - name: rockylinux9
-            command: /usr/lib/systemd/systemd
     steps:
       - name: Check out the codebase
         uses: actions/checkout@v4
@@ -30,7 +28,7 @@ jobs:
       - name: Set up python 3
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
       - name: Update ubuntu repositories
         run: sudo apt-get update
